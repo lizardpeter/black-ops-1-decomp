@@ -1,0 +1,52 @@
+name: Check BO1 Microsoft Store catalog metadata
+on:
+  push:
+    branches:
+      - test/bo1-anonymous-modtools-20261014
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Query public Microsoft product catalog metadata
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,urllib.request,urllib.parse,urllib.error
+          product="9N87RTWZDTJ1"
+          endpoints={
+             "displaycatalog":f"https://displaycatalog.mp.microsoft.com/v7.0/products/{product}?fieldsTemplate=Details&market=US&languages=en-US&catalogIds=4",
+             "storeedgefd":f"https://storeedgefd.dsx.mp.microsoft.com/v9.0/pages/pdp?productId={product}&market=US&locale=en-US&appVersion=22205.1401.0.0&deviceFamily=Windows.Desktop",
+          }
+          for name,url in endpoints.items():
+             print("===== SERVICE",name,"=====",flush=True)
+             try:
+                req=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0","Accept":"application/json"})
+                with urllib.request.urlopen(req,timeout=22) as r:
+                   raw=r.read()
+                   print("HTTP",r.status,"bytes",len(raw),flush=True)
+                   data=json.loads(raw)
+                matches=[]
+                def walk(o,path="",depth=0):
+                   if len(matches)>160 or depth>18:return
+                   if isinstance(o,dict):
+                      for k,v in o.items():
+                         p=f"{path}.{k}" if path else k
+                         if any(t in k.lower() for t in ["updated","update","version","released","release","published","date","time","packagefamily","wucategory","licensed","license","developer"]):
+                            if isinstance(v,(str,int,float,bool)) or v is None:
+                               matches.append((p,str(v)[:220]))
+                            elif isinstance(v,list):matches.append((p,f"list len={len(v)}"))
+                         walk(v,p,depth+1)
+                   elif isinstance(o,list):
+                      for i,v in enumerate(o[:4]):walk(v,f"{path}[{i}]",depth+1)
+                walk(data)
+                for path,value in matches:
+                   print(path,":",value,flush=True)
+                if isinstance(data,dict):
+                   print("root keys",list(data.keys())[:30],flush=True)
+             except Exception as e:
+                print("ERROR",repr(e),flush=True)
+          PY
