@@ -1,0 +1,879 @@
+2026-10-15 02:56:40 INFO  (LoggingInitialization) Using log config file: jar:file:/opt/ghidra/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-10-15 02:56:40 INFO  (LoggingInitialization) Using log file: /tmp/raw/analyze.log  
+2026-10-15 02:56:40 DEBUG (GhidraObjectInputFilter) Including serial input filter: FileSystem/data/client.rmi.serial.filter  
+2026-10-15 02:56:40 INFO  (Preferences) Loading user preferences: /home/runner/.config/ghidra/ghidra_12.1.4_PUBLIC/preferences  
+2026-10-15 02:56:40 INFO  (ClassSearcher) Searching for classes...  
+2026-10-15 02:56:41 INFO  (ClassSearcher) Class search complete (904 ms)  
+2026-10-15 02:56:43 INFO  (DefaultSSLContextInitializer) Initializing SSL Context  
+2026-10-15 02:56:43 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-10-15 02:56:43 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-10-15 02:56:43 INFO  (DefaultTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-10-15 02:56:43 INFO  (FileCacheMaintenanceDaemon) Starting cache cleanup: /var/tmp/runner-ghidra/fscache2  
+2026-10-15 02:56:43 INFO  (FileCacheMaintenanceDaemon) Finished cache cleanup, estimated storage used: 0  
+2026-10-15 02:56:44 INFO  (AnalyzeHeadless) Headless startup complete (5545 ms)  
+2026-10-15 02:56:44 INFO  (ClassSearcher) Class searcher loaded 59 extension points (20 false positives)  
+2026-10-15 02:56:44 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /opt/ghidra/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /opt/ghidra/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /home/runner/work/black-ops-1-decomp/black-ops-1-decomp/tools/ghidra
+    /opt/ghidra/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /opt/ghidra/Ghidra/Processors/DATA/ghidra_scripts
+    /opt/ghidra/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /opt/ghidra/Ghidra/Processors/JVM/ghidra_scripts
+    /opt/ghidra/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /opt/ghidra/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /opt/ghidra/Ghidra/Features/VersionTracking/ghidra_scripts
+    /opt/ghidra/Ghidra/Features/PyGhidra/ghidra_scripts
+    /opt/ghidra/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /opt/ghidra/Ghidra/Features/Base/ghidra_scripts
+    /opt/ghidra/Ghidra/Processors/Atmel/ghidra_scripts
+    /opt/ghidra/Ghidra/Debug/Debugger/ghidra_scripts
+    /opt/ghidra/Ghidra/Features/Decompiler/ghidra_scripts
+    /opt/ghidra/Ghidra/Features/FunctionID/ghidra_scripts
+    /opt/ghidra/Ghidra/Features/PDB/ghidra_scripts
+    /opt/ghidra/Ghidra/Processors/8051/ghidra_scripts
+    /opt/ghidra/Ghidra/Processors/PIC/ghidra_scripts
+    /opt/ghidra/Ghidra/Features/FileFormats/ghidra_scripts
+    /opt/ghidra/Ghidra/Features/BSim/ghidra_scripts
+    /opt/ghidra/Ghidra/Features/BytePatterns/ghidra_scripts  
+2026-10-15 02:56:44 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-10-15 02:56:44 INFO  (HeadlessAnalyzer) Creating project: /tmp/proj/t5  
+2026-10-15 02:56:44 DEBUG (DefaultProjectManager) No tools found; Installing default tools  
+2026-10-15 02:56:44 DEBUG (DefaultProjectManager) 	no recent project directories found  
+2026-10-15 02:56:45 INFO  (DefaultProject) Creating project: /tmp/proj/t5  
+2026-10-15 02:56:45 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-10-15 02:56:45 INFO  (HeadlessAnalyzer)      project: /tmp/proj/t5  
+2026-10-15 02:56:45 INFO  (HeadlessAnalyzer) IMPORTING: file:///tmp/in/t5mp.exe  
+2026-10-15 02:56:46 INFO  (ProgramLoader) Using Loader: Portable Executable (PE)  
+2026-10-15 02:56:46 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:32:default:windows  
+2026-10-15 02:56:46 INFO  (ProgramLoader) Using Library Search Path: [., /bin, /lib, /lib64, /lib/x86_64-linux-gnu, /lib/aarch64-linux-gnu, /usr/bin, /usr/lib, /usr/X11R6/bin, /usr/X11R6/lib, /usr/java/packages/lib, /usr/lib64]  
+2026-10-15 02:56:46 INFO  (TLSDirectory) TLS callbacks at a0c990  
+2026-10-15 02:56:47 INFO  (ProgramLoader) Additional info:
+Loading file:///tmp/in/t5mp.exe?MD5=5f078cb9fdae3b960d616b969af72c48...
+------------------------------------------------
+
+Searching 8 paths for library ADVAPI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library BINKW32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library D3D9.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library D3DX9_43.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library DSOUND.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library GDI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library KERNEL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library OLE32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library PSAPI.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library SHELL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library STEAM_API.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library USER32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library WINMM.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library WS2_32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library WSOCK32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library XINPUT1_3.DLL...
+Library not found.
+------------------------------------------------
+
+Linking the External Programs of 't5mp.exe' to imported libraries...
+  [STEAM_API.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [WSOCK32.DLL] -> not found in project
+  [BINKW32.DLL] -> not found in project
+  [D3D9.DLL] -> not found in project
+  [D3DX9_43.DLL] -> not found in project
+  [DSOUND.DLL] -> not found in project
+  [KERNEL32.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [GDI32.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+  [SHELL32.DLL] -> not found in project
+  [OLE32.DLL] -> not found in project
+  [XINPUT1_3.DLL] -> not found in project
+  [PSAPI.DLL] -> not found in project
+  [WS2_32.DLL] -> not found in project
+------------------------------------------------
+
+  
+2026-10-15 02:56:47 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-10-15 02:56:47 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///tmp/in/t5mp.exe  
+2026-10-15 02:56:47 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /opt/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-10-15 02:56:47 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /opt/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-10-15 02:56:47 DEBUG (SymbolServerService) SymbolServerService: querying Program's Import Location - /tmp/in for BlackOpsMP.pdb, ae99521e-3e30-4401-bf06-8f62be15e23e, 1, 0, ???  
+2026-10-15 02:56:47 DEBUG (SymbolServerService) SymbolServerService: got 0 results from Program's Import Location - /tmp/in  
+2026-10-15 02:56:47 DEBUG (SymbolServerService) SymbolServerService: found 0 matches  
+2026-10-15 02:56:47 INFO  (PdbUniversalAnalyzer) Skipping PDB processing: failed to locate PDB file in configured locations  
+2026-10-15 02:56:47 INFO  (PdbUniversalAnalyzer) Use a script to set the PDB file location. I.e.,
+    PdbAnalyzer.setPdbFileOption(currentProgram, new File("/path/to/pdb/file.pdb")); or
+    PdbUniversalAnalyzer.setPdbFileOption(currentProgram, new File("/path/to/pdb/file.pdb"));
+Or set the symbol server search configuration using:    PdbPlugin.saveSymbolServerServiceConfig(...);
+ This must be done using a pre-script (prior to analysis).  
+2026-10-15 02:56:53 ERROR (PngDataType) Invalid PNG data at 00bdb6c8  
+2026-10-15 02:57:06 WARN  (DecompileCallback) Decompiling 008eb460, pcode error at 0e8f5493: Could not follow disassembly flow into non-existing memory at 0e8f5493  
+2026-10-15 02:57:08 WARN  (DecompileCallback) Decompiling 0073b510: Unable to read bytes at ram:07010700  
+2026-10-15 02:57:30 WARN  (DecompileCallback) Decompiling 007bc130: Unable to read bytes at ram:7226e8c3  
+2026-10-15 02:57:30 WARN  (DecompileCallback) Decompiling 0091ecf0: Unable to read bytes at ram:cccccccc  
+2026-10-15 02:58:18 ERROR (GTimerTask) Unexpected exception running timer task java.lang.OutOfMemoryError: Java heap space
+	at ghidra.formats.gfilesystem.FileSystemInstanceManager.getUnusedFSes(FileSystemInstanceManager.java:243)
+	at ghidra.formats.gfilesystem.FileSystemInstanceManager.cacheMaint(FileSystemInstanceManager.java:220)
+	at ghidra.formats.gfilesystem.FileSystemService.lambda$new$0(FileSystemService.java:173)
+	at ghidra.formats.gfilesystem.FileSystemService$$Lambda/0x0000000100307670.run(Unknown Source)
+	at ghidra.util.timer.GTimer$GTimerTask.run(GTimer.java:98)
+	at java.base/java.util.TimerThread.mainLoop(Timer.java:566)
+	at java.base/java.util.TimerThread.run(Timer.java:516)
+ 
+2026-10-15 02:58:18 ERROR (X86Analyzer) caught exception java.util.concurrent.ExecutionException: java.lang.OutOfMemoryError: Java heap space
+	at java.base/java.util.concurrent.FutureTask.report(FutureTask.java:122)
+	at java.base/java.util.concurrent.FutureTask.get(FutureTask.java:191)
+	at generic.concurrent.QResult.<init>(QResult.java:40)
+	at generic.concurrent.FutureTaskMonitor.run(FutureTaskMonitor.java:77)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.lang.OutOfMemoryError: Java heap space
+	at java.base/java.util.Arrays.copyOf(Arrays.java:3482)
+	at java.base/java.util.Vector.clone(Vector.java:669)
+	at ghidra.program.util.VarnodeContext.pushMemState(VarnodeContext.java:2010)
+	at ghidra.program.util.SymbolicPropogator$SavedFlowState.<init>(SymbolicPropogator.java:453)
+	at ghidra.program.util.SymbolicPropogator$SavedFlowState.<init>(SymbolicPropogator.java:442)
+	at ghidra.program.util.SymbolicPropogator.applyPcode(SymbolicPropogator.java:976)
+	at ghidra.program.util.SymbolicPropogator.flowConstants(SymbolicPropogator.java:626)
+	at ghidra.program.util.SymbolicPropogator.flowConstants(SymbolicPropogator.java:479)
+	at ghidra.program.util.SymbolicPropogator.flowConstants(SymbolicPropogator.java:215)
+	at ghidra.app.plugin.core.analysis.X86Analyzer.flowConstants(X86Analyzer.java:96)
+	at ghidra.app.plugin.core.analysis.ConstantPropagationAnalyzer.analyzeLocation(ConstantPropagationAnalyzer.java:490)
+	at ghidra.app.services.AbstractAnalyzer$1.process(AbstractAnalyzer.java:181)
+	at ghidra.app.services.AbstractAnalyzer$1.process(AbstractAnalyzer.java:170)
+	at generic.concurrent.ConcurrentQ$CallbackCallable.call(ConcurrentQ.java:706)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at generic.concurrent.FutureTaskMonitor.run(FutureTaskMonitor.java:75)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.runWith(Thread.java:1596)
+	... 1 more
+ 
+2026-10-15 02:58:18 ERROR (AnalysisTaskWrapper) Analysis Task: Subroutine References - java.io.IOException: Locked buffer: 3676 ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Locked buffer: 3676
+	at ghidra.framework.data.DomainObjectAdapter.fatalErrorOccurred(DomainObjectAdapter.java:499)
+	at ghidra.framework.data.DomainObjectAdapterDB.dbError(DomainObjectAdapterDB.java:211)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1333)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1315)
+	at ghidra.program.database.ListingDB.getInstructionAt(ListingDB.java:106)
+	at ghidra.app.plugin.core.function.FunctionAnalyzer.added(FunctionAnalyzer.java:76)
+	at ghidra.app.plugin.core.function.CreateThunkAnalyzer.added(CreateThunkAnalyzer.java:51)
+	at ghidra.app.plugin.core.analysis.AnalysisScheduler.runAnalyzer(AnalysisScheduler.java:186)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:37)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:24)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager$AnalysisTaskWrapper.run(AutoAnalysisManager.java:660)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:760)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:639)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:604)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1060)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1591)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1751)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1692)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1776)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:452)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+Caused by: java.io.IOException: Locked buffer: 3676
+	at db.buffers.BufferMgr.getBufferNode(BufferMgr.java:830)
+	at db.buffers.BufferMgr.getBuffer(BufferMgr.java:968)
+	at db.NodeMgr.getLongKeyNode(NodeMgr.java:257)
+	at db.Table.getRecord(Table.java:701)
+	at ghidra.program.database.code.InstDBAdapterV1.getRecord(InstDBAdapterV1.java:95)
+	at ghidra.program.database.code.CodeManager.getInstructionDB(CodeManager.java:3081)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1326)
+	... 20 more
+ 
+2026-10-15 02:58:18 ERROR (AnalysisTaskWrapper) Analysis Task: Non-Returning Functions - Discovered - java.io.IOException: Locked buffer: 3676 ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Locked buffer: 3676
+	at ghidra.framework.data.DomainObjectAdapter.fatalErrorOccurred(DomainObjectAdapter.java:499)
+	at ghidra.framework.data.DomainObjectAdapterDB.dbError(DomainObjectAdapterDB.java:211)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1333)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1315)
+	at ghidra.program.database.ListingDB.getInstructionAt(ListingDB.java:106)
+	at ghidra.app.plugin.core.analysis.FindNoReturnFunctionsAnalyzer.detectNoReturn(FindNoReturnFunctionsAnalyzer.java:354)
+	at ghidra.app.plugin.core.analysis.FindNoReturnFunctionsAnalyzer.added(FindNoReturnFunctionsAnalyzer.java:117)
+	at ghidra.app.plugin.core.analysis.AnalysisScheduler.runAnalyzer(AnalysisScheduler.java:186)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:37)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:24)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager$AnalysisTaskWrapper.run(AutoAnalysisManager.java:660)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:760)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:639)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:604)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1060)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1591)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1751)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1692)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1776)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:452)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+Caused by: java.io.IOException: Locked buffer: 3676
+	at db.buffers.BufferMgr.getBufferNode(BufferMgr.java:830)
+	at db.buffers.BufferMgr.getBuffer(BufferMgr.java:968)
+	at db.NodeMgr.getLongKeyNode(NodeMgr.java:257)
+	at db.Table.getRecord(Table.java:701)
+	at ghidra.program.database.code.InstDBAdapterV1.getRecord(InstDBAdapterV1.java:95)
+	at ghidra.program.database.code.CodeManager.getInstructionDB(CodeManager.java:3081)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1326)
+	... 20 more
+ 
+2026-10-15 02:58:18 ERROR (AnalysisTaskWrapper) Analysis Task: Shared Return Calls - java.io.IOException: Locked buffer: 3676 ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Locked buffer: 3676
+	at ghidra.framework.data.DomainObjectAdapter.fatalErrorOccurred(DomainObjectAdapter.java:499)
+	at ghidra.framework.data.DomainObjectAdapterDB.dbError(DomainObjectAdapterDB.java:211)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1333)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1315)
+	at ghidra.program.database.ListingDB.getInstructionAt(ListingDB.java:106)
+	at ghidra.app.plugin.core.function.SharedReturnJumpAnalyzer.added(SharedReturnJumpAnalyzer.java:75)
+	at ghidra.app.plugin.core.analysis.AnalysisScheduler.runAnalyzer(AnalysisScheduler.java:186)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:37)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:24)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager$AnalysisTaskWrapper.run(AutoAnalysisManager.java:660)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:760)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:639)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:604)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1060)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1591)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1751)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1692)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1776)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:452)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+Caused by: java.io.IOException: Locked buffer: 3676
+	at db.buffers.BufferMgr.getBufferNode(BufferMgr.java:830)
+	at db.buffers.BufferMgr.getBuffer(BufferMgr.java:968)
+	at db.NodeMgr.getLongKeyNode(NodeMgr.java:257)
+	at db.Table.getRecord(Table.java:701)
+	at ghidra.program.database.code.InstDBAdapterV1.getRecord(InstDBAdapterV1.java:95)
+	at ghidra.program.database.code.CodeManager.getInstructionDB(CodeManager.java:3081)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1326)
+	... 19 more
+ 
+2026-10-15 02:58:18 ERROR (AnalysisTaskWrapper) Analysis Task: Subroutine References - java.io.IOException: Locked buffer: 3676 ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Locked buffer: 3676
+	at ghidra.framework.data.DomainObjectAdapter.fatalErrorOccurred(DomainObjectAdapter.java:499)
+	at ghidra.framework.data.DomainObjectAdapterDB.dbError(DomainObjectAdapterDB.java:211)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1333)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1315)
+	at ghidra.program.database.ListingDB.getInstructionAt(ListingDB.java:106)
+	at ghidra.app.plugin.core.function.FunctionAnalyzer.added(FunctionAnalyzer.java:76)
+	at ghidra.app.plugin.core.analysis.AnalysisScheduler.runAnalyzer(AnalysisScheduler.java:186)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:37)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:24)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager$AnalysisTaskWrapper.run(AutoAnalysisManager.java:660)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:760)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:639)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:604)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1060)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1591)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1751)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1692)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1776)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:452)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+Caused by: java.io.IOException: Locked buffer: 3676
+	at db.buffers.BufferMgr.getBufferNode(BufferMgr.java:830)
+	at db.buffers.BufferMgr.getBuffer(BufferMgr.java:968)
+	at db.NodeMgr.getLongKeyNode(NodeMgr.java:257)
+	at db.Table.getRecord(Table.java:701)
+	at ghidra.program.database.code.InstDBAdapterV1.getRecord(InstDBAdapterV1.java:95)
+	at ghidra.program.database.code.CodeManager.getInstructionDB(CodeManager.java:3081)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1326)
+	... 19 more
+ 
+2026-10-15 02:58:18 ERROR (DecompilerSwitchAnalyzer) Unexpected exception ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Locked buffer: 3676
+	at ghidra.framework.data.DomainObjectAdapter.fatalErrorOccurred(DomainObjectAdapter.java:499)
+	at ghidra.framework.data.DomainObjectAdapterDB.dbError(DomainObjectAdapterDB.java:211)
+	at ghidra.program.database.code.CodeManager.getInstructions(CodeManager.java:2510)
+	at ghidra.program.database.ListingDB.getInstructions(ListingDB.java:137)
+	at ghidra.app.plugin.core.analysis.DecompilerSwitchAnalyzer.findLocations(DecompilerSwitchAnalyzer.java:246)
+	at ghidra.app.plugin.core.analysis.DecompilerSwitchAnalyzer.added(DecompilerSwitchAnalyzer.java:101)
+	at ghidra.app.plugin.core.analysis.AnalysisScheduler.runAnalyzer(AnalysisScheduler.java:186)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:37)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:24)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager$AnalysisTaskWrapper.run(AutoAnalysisManager.java:660)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:760)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:639)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:604)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1060)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1591)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1751)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1692)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1776)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:452)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+Caused by: java.io.IOException: Locked buffer: 3676
+	at db.buffers.BufferMgr.getBufferNode(BufferMgr.java:830)
+	at db.buffers.BufferMgr.getBuffer(BufferMgr.java:968)
+	at db.NodeMgr.getLongKeyNode(NodeMgr.java:257)
+	at db.Table$LongKeyRecordIterator.<init>(Table.java:2083)
+	at db.Table.iterator(Table.java:1868)
+	at ghidra.program.database.map.AddressKeyRecordIterator.<init>(AddressKeyRecordIterator.java:146)
+	at ghidra.program.database.map.AddressKeyRecordIterator.<init>(AddressKeyRecordIterator.java:108)
+	at ghidra.program.database.code.InstDBAdapterV1.getRecords(InstDBAdapterV1.java:138)
+	at ghidra.program.database.code.CodeManager.getInstructions(CodeManager.java:2506)
+	... 19 more
+ 
+2026-10-15 02:58:18 ERROR (X86Analyzer) caught exception java.util.concurrent.ExecutionException: ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Locked buffer: 3676
+	at java.base/java.util.concurrent.FutureTask.report(FutureTask.java:122)
+	at java.base/java.util.concurrent.FutureTask.get(FutureTask.java:191)
+	at generic.concurrent.QResult.<init>(QResult.java:40)
+	at generic.concurrent.FutureTaskMonitor.run(FutureTaskMonitor.java:77)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Locked buffer: 3676
+	at ghidra.framework.data.DomainObjectAdapter.fatalErrorOccurred(DomainObjectAdapter.java:499)
+	at ghidra.framework.data.DomainObjectAdapterDB.dbError(DomainObjectAdapterDB.java:211)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1333)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1315)
+	at ghidra.program.database.ListingDB.getInstructionAt(ListingDB.java:106)
+	at ghidra.app.plugin.core.analysis.ConstantPropagationAnalyzer.analyzeLocation(ConstantPropagationAnalyzer.java:464)
+	at ghidra.app.services.AbstractAnalyzer$1.process(AbstractAnalyzer.java:181)
+	at ghidra.app.services.AbstractAnalyzer$1.process(AbstractAnalyzer.java:170)
+	at generic.concurrent.ConcurrentQ$CallbackCallable.call(ConcurrentQ.java:706)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at generic.concurrent.FutureTaskMonitor.run(FutureTaskMonitor.java:75)
+	... 3 more
+Caused by: java.io.IOException: Locked buffer: 3676
+	at db.buffers.BufferMgr.getBufferNode(BufferMgr.java:830)
+	at db.buffers.BufferMgr.getBuffer(BufferMgr.java:968)
+	at db.NodeMgr.getLongKeyNode(NodeMgr.java:257)
+	at db.Table.getRecord(Table.java:701)
+	at ghidra.program.database.code.InstDBAdapterV1.getRecord(InstDBAdapterV1.java:95)
+	at ghidra.program.database.code.CodeManager.getInstructionDB(CodeManager.java:3081)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1326)
+	... 11 more
+ 
+2026-10-15 02:58:18 ERROR (AnalysisTaskWrapper) Analysis Task: Scalar Operand References - java.io.IOException: Locked buffer: 3676 ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Locked buffer: 3676
+	at ghidra.framework.data.DomainObjectAdapter.fatalErrorOccurred(DomainObjectAdapter.java:499)
+	at ghidra.framework.data.DomainObjectAdapterDB.dbError(DomainObjectAdapterDB.java:211)
+	at ghidra.program.database.code.CodeManager.getInstructions(CodeManager.java:2510)
+	at ghidra.program.database.ListingDB.getInstructions(ListingDB.java:137)
+	at ghidra.app.plugin.core.analysis.ScalarOperandAnalyzer.added(ScalarOperandAnalyzer.java:92)
+	at ghidra.app.plugin.core.analysis.AnalysisScheduler.runAnalyzer(AnalysisScheduler.java:186)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:37)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:24)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager$AnalysisTaskWrapper.run(AutoAnalysisManager.java:660)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:760)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:639)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:604)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1060)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1591)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1751)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1692)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1776)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:452)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+Caused by: java.io.IOException: Locked buffer: 3676
+	at db.buffers.BufferMgr.getBufferNode(BufferMgr.java:830)
+	at db.buffers.BufferMgr.getBuffer(BufferMgr.java:968)
+	at db.NodeMgr.getLongKeyNode(NodeMgr.java:257)
+	at db.Table$LongKeyRecordIterator.<init>(Table.java:2083)
+	at db.Table.iterator(Table.java:1868)
+	at ghidra.program.database.map.AddressKeyRecordIterator.<init>(AddressKeyRecordIterator.java:146)
+	at ghidra.program.database.map.AddressKeyRecordIterator.<init>(AddressKeyRecordIterator.java:108)
+	at ghidra.program.database.code.InstDBAdapterV1.getRecords(InstDBAdapterV1.java:138)
+	at ghidra.program.database.code.CodeManager.getInstructions(CodeManager.java:2506)
+	... 18 more
+ 
+2026-10-15 02:58:18 ERROR (AnalysisTaskWrapper) Analysis Task: Reference - java.io.IOException: Locked buffer: 3676 ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Locked buffer: 3676
+	at ghidra.framework.data.DomainObjectAdapter.fatalErrorOccurred(DomainObjectAdapter.java:499)
+	at ghidra.framework.data.DomainObjectAdapterDB.dbError(DomainObjectAdapterDB.java:211)
+	at ghidra.program.database.code.CodeManager.getCodeUnitAt(CodeManager.java:881)
+	at ghidra.program.database.code.CodeManager.getCodeUnitAt(CodeManager.java:854)
+	at ghidra.program.database.code.CodeManager.getCodeUnitContaining(CodeManager.java:1024)
+	at ghidra.program.database.ListingDB.getCodeUnitContaining(ListingDB.java:60)
+	at ghidra.app.plugin.core.analysis.OperandReferenceAnalyzer.added(OperandReferenceAnalyzer.java:253)
+	at ghidra.app.plugin.core.analysis.AnalysisScheduler.runAnalyzer(AnalysisScheduler.java:186)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:37)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:24)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager$AnalysisTaskWrapper.run(AutoAnalysisManager.java:660)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:760)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:639)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:604)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1060)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1591)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1751)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1692)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1776)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:452)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+Caused by: java.io.IOException: Locked buffer: 3676
+	at db.buffers.BufferMgr.getBufferNode(BufferMgr.java:830)
+	at db.buffers.BufferMgr.getBuffer(BufferMgr.java:968)
+	at db.NodeMgr.getLongKeyNode(NodeMgr.java:257)
+	at db.Table.getRecord(Table.java:701)
+	at ghidra.program.database.code.InstDBAdapterV1.getRecord(InstDBAdapterV1.java:95)
+	at ghidra.program.database.code.CodeManager.getInstructionDB(CodeManager.java:3081)
+	at ghidra.program.database.code.CodeManager.getCodeUnitAt(CodeManager.java:869)
+	... 20 more
+ 
+2026-10-15 02:58:18 ERROR (AnalysisTaskWrapper) Analysis Task: Data Reference - java.io.IOException: Locked buffer: 3676 ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Locked buffer: 3676
+	at ghidra.framework.data.DomainObjectAdapter.fatalErrorOccurred(DomainObjectAdapter.java:499)
+	at ghidra.framework.data.DomainObjectAdapterDB.dbError(DomainObjectAdapterDB.java:211)
+	at ghidra.program.database.code.CodeManager.getCodeUnitAt(CodeManager.java:881)
+	at ghidra.program.database.code.CodeManager.getCodeUnitAt(CodeManager.java:854)
+	at ghidra.program.database.code.CodeManager.getCodeUnitContaining(CodeManager.java:1024)
+	at ghidra.program.database.ListingDB.getCodeUnitContaining(ListingDB.java:60)
+	at ghidra.app.plugin.core.analysis.OperandReferenceAnalyzer.added(OperandReferenceAnalyzer.java:253)
+	at ghidra.app.plugin.core.analysis.AnalysisScheduler.runAnalyzer(AnalysisScheduler.java:186)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:37)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:24)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager$AnalysisTaskWrapper.run(AutoAnalysisManager.java:660)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:760)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:639)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:604)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1060)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1591)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1751)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1692)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1776)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:452)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+Caused by: java.io.IOException: Locked buffer: 3676
+	at db.buffers.BufferMgr.getBufferNode(BufferMgr.java:830)
+	at db.buffers.BufferMgr.getBuffer(BufferMgr.java:968)
+	at db.NodeMgr.getLongKeyNode(NodeMgr.java:257)
+	at db.Table.getRecord(Table.java:701)
+	at ghidra.program.database.code.InstDBAdapterV1.getRecord(InstDBAdapterV1.java:95)
+	at ghidra.program.database.code.CodeManager.getInstructionDB(CodeManager.java:3081)
+	at ghidra.program.database.code.CodeManager.getCodeUnitAt(CodeManager.java:869)
+	... 20 more
+ 
+2026-10-15 02:58:18 ERROR (AnalysisTaskWrapper) Analysis Task: Function ID - java.io.IOException: Locked buffer: 3676 ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Locked buffer: 3676
+	at ghidra.framework.data.DomainObjectAdapter.fatalErrorOccurred(DomainObjectAdapter.java:499)
+	at ghidra.framework.data.DomainObjectAdapterDB.dbError(DomainObjectAdapterDB.java:211)
+	at ghidra.program.database.code.CodeManager.getInstructions(CodeManager.java:2510)
+	at ghidra.program.database.ListingDB.getInstructions(ListingDB.java:137)
+	at ghidra.feature.fid.hash.FunctionBodyFunctionExtentGenerator.calculateExtent(FunctionBodyFunctionExtentGenerator.java:45)
+	at ghidra.feature.fid.hash.MessageDigestFidHasher.hash(MessageDigestFidHasher.java:85)
+	at ghidra.feature.fid.service.FidHasherFactory.get(FidHasherFactory.java:38)
+	at ghidra.feature.fid.service.FidHasherFactory.get(FidHasherFactory.java:28)
+	at ghidra.feature.fid.service.FIDFixedSizeMRUCachingFactory.get(FIDFixedSizeMRUCachingFactory.java:51)
+	at ghidra.feature.fid.service.FidProgramSeeker.getFamily(FidProgramSeeker.java:295)
+	at ghidra.feature.fid.service.FidProgramSeeker.search(FidProgramSeeker.java:438)
+	at ghidra.feature.fid.service.FidService.processProgram(FidService.java:220)
+	at ghidra.feature.fid.cmd.ApplyFidEntriesCommand.applyTo(ApplyFidEntriesCommand.java:71)
+	at ghidra.feature.fid.analyzer.FidAnalyzer.added(FidAnalyzer.java:146)
+	at ghidra.app.plugin.core.analysis.AnalysisScheduler.runAnalyzer(AnalysisScheduler.java:186)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:37)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:24)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager$AnalysisTaskWrapper.run(AutoAnalysisManager.java:660)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:760)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:639)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:604)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1060)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1591)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1751)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1692)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1776)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:452)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+Caused by: java.io.IOException: Locked buffer: 3676
+	at db.buffers.BufferMgr.getBufferNode(BufferMgr.java:830)
+	at db.buffers.BufferMgr.getBuffer(BufferMgr.java:968)
+	at db.NodeMgr.getLongKeyNode(NodeMgr.java:257)
+	at db.Table$LongKeyRecordIterator.<init>(Table.java:2083)
+	at db.Table.iterator(Table.java:1868)
+	at ghidra.program.database.map.AddressKeyRecordIterator.<init>(AddressKeyRecordIterator.java:146)
+	at ghidra.program.database.map.AddressKeyRecordIterator.<init>(AddressKeyRecordIterator.java:108)
+	at ghidra.program.database.code.InstDBAdapterV1.getRecords(InstDBAdapterV1.java:138)
+	at ghidra.program.database.code.CodeManager.getInstructions(CodeManager.java:2506)
+	... 27 more
+ 
+2026-10-15 02:58:18 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/runner-ghidra/packed-db-cache  
+2026-10-15 02:58:18 DEBUG (PackedDatabaseCache) Caching packed database: /opt/ghidra/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-10-15 02:58:18 DEBUG (PackedDatabase) Unpacking database /opt/ghidra/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt -> /var/tmp/runner-ghidra/packed-db-cache/pdb9FED59E8/db.1.gbf  
+2026-10-15 02:58:18 DEBUG (PackedDatabaseCache) Cache update completed: /opt/ghidra/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-10-15 02:58:19 ERROR (AnalysisTaskWrapper) Analysis Task: Apply Data Archives - java.io.IOException: Locked buffer: 3676 ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Locked buffer: 3676
+	at ghidra.framework.data.DomainObjectAdapter.fatalErrorOccurred(DomainObjectAdapter.java:499)
+	at ghidra.framework.data.DomainObjectAdapterDB.dbError(DomainObjectAdapterDB.java:211)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1333)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1315)
+	at ghidra.program.database.code.CodeManager.getInstructionContaining(CodeManager.java:1449)
+	at ghidra.program.database.ListingDB.getInstructionContaining(ListingDB.java:111)
+	at ghidra.app.cmd.function.ApplyFunctionDataTypesCmd.getInstructionBefore(ApplyFunctionDataTypesCmd.java:355)
+	at ghidra.app.cmd.function.ApplyFunctionDataTypesCmd.isValidFunctionStart(ApplyFunctionDataTypesCmd.java:320)
+	at ghidra.app.cmd.function.ApplyFunctionDataTypesCmd.checkDoApplyFunctionDefinition(ApplyFunctionDataTypesCmd.java:276)
+	at ghidra.app.cmd.function.ApplyFunctionDataTypesCmd.checkForSymbol(ApplyFunctionDataTypesCmd.java:242)
+	at ghidra.app.cmd.function.ApplyFunctionDataTypesCmd.applyFunctionDefinitions(ApplyFunctionDataTypesCmd.java:194)
+	at ghidra.app.cmd.function.ApplyFunctionDataTypesCmd.applyTo(ApplyFunctionDataTypesCmd.java:113)
+	at ghidra.app.plugin.core.analysis.ApplyDataArchiveAnalyzer.added(ApplyDataArchiveAnalyzer.java:108)
+	at ghidra.app.plugin.core.analysis.AnalysisScheduler.runAnalyzer(AnalysisScheduler.java:186)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:37)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:24)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager$AnalysisTaskWrapper.run(AutoAnalysisManager.java:660)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:760)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:639)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:604)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1060)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1591)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1751)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1692)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1776)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:452)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+Caused by: java.io.IOException: Locked buffer: 3676
+	at db.buffers.BufferMgr.getBufferNode(BufferMgr.java:830)
+	at db.buffers.BufferMgr.getBuffer(BufferMgr.java:968)
+	at db.NodeMgr.getLongKeyNode(NodeMgr.java:257)
+	at db.Table.getRecord(Table.java:701)
+	at ghidra.program.database.code.InstDBAdapterV1.getRecord(InstDBAdapterV1.java:95)
+	at ghidra.program.database.code.CodeManager.getInstructionDB(CodeManager.java:3081)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1326)
+	... 26 more
+ 
+2026-10-15 02:58:19 ERROR (AnalysisTaskWrapper) Analysis Task: Function Start Search After Data - java.io.IOException: Locked buffer: 3676 ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Locked buffer: 3676
+	at ghidra.framework.data.DomainObjectAdapter.fatalErrorOccurred(DomainObjectAdapter.java:499)
+	at ghidra.framework.data.DomainObjectAdapterDB.dbError(DomainObjectAdapterDB.java:211)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1333)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1315)
+	at ghidra.program.database.code.CodeManager.getInstructionContaining(CodeManager.java:1449)
+	at ghidra.program.database.ListingDB.getInstructionContaining(ListingDB.java:111)
+	at ghidra.app.analyzers.FunctionStartAnalyzer$FunctionStartAction.checkAfterName(FunctionStartAnalyzer.java:428)
+	at ghidra.app.analyzers.FunctionStartAnalyzer$FunctionStartAction.checkPreRequisites(FunctionStartAnalyzer.java:251)
+	at ghidra.app.analyzers.FunctionStartAnalyzer$PossibleFunctionStartAction.apply(FunctionStartAnalyzer.java:686)
+	at ghidra.util.bytesearch.MemoryBytePatternSearcher.processMatch(MemoryBytePatternSearcher.java:148)
+	at ghidra.util.bytesearch.MemoryBytePatternSearcher.lambda$search$0(MemoryBytePatternSearcher.java:131)
+	at ghidra.util.bytesearch.ProgramMemorySearcher.performSearch(ProgramMemorySearcher.java:164)
+	at ghidra.util.bytesearch.ProgramMemorySearcher.searchRange(ProgramMemorySearcher.java:144)
+	at ghidra.util.bytesearch.ProgramMemorySearcher.searchBlock(ProgramMemorySearcher.java:126)
+	at ghidra.util.bytesearch.ProgramMemorySearcher.search(ProgramMemorySearcher.java:117)
+	at ghidra.util.bytesearch.MemoryBytePatternSearcher.search(MemoryBytePatternSearcher.java:131)
+	at ghidra.app.analyzers.FunctionStartAnalyzer.added(FunctionStartAnalyzer.java:833)
+	at ghidra.app.plugin.core.analysis.AnalysisScheduler.runAnalyzer(AnalysisScheduler.java:186)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:37)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:24)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager$AnalysisTaskWrapper.run(AutoAnalysisManager.java:660)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:760)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:639)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:604)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1060)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1591)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1751)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1692)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1776)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:452)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+Caused by: java.io.IOException: Locked buffer: 3676
+	at db.buffers.BufferMgr.getBufferNode(BufferMgr.java:830)
+	at db.buffers.BufferMgr.getBuffer(BufferMgr.java:968)
+	at db.NodeMgr.getLongKeyNode(NodeMgr.java:257)
+	at db.Table.getRecord(Table.java:701)
+	at ghidra.program.database.code.InstDBAdapterV1.getRecord(InstDBAdapterV1.java:95)
+	at ghidra.program.database.code.CodeManager.getInstructionDB(CodeManager.java:3081)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1326)
+	... 30 more
+ 
+2026-10-15 02:58:19 ERROR (AnalysisTaskWrapper) Analysis Task: Function Start Search After Code - java.io.IOException: Locked buffer: 3676 ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Locked buffer: 3676
+	at ghidra.framework.data.DomainObjectAdapter.fatalErrorOccurred(DomainObjectAdapter.java:499)
+	at ghidra.framework.data.DomainObjectAdapterDB.dbError(DomainObjectAdapterDB.java:211)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1333)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1315)
+	at ghidra.program.database.code.CodeManager.getInstructionContaining(CodeManager.java:1449)
+	at ghidra.program.database.ListingDB.getInstructionContaining(ListingDB.java:111)
+	at ghidra.app.analyzers.FunctionStartAnalyzer$FunctionStartAction.checkAfterName(FunctionStartAnalyzer.java:428)
+	at ghidra.app.analyzers.FunctionStartAnalyzer$FunctionStartAction.checkPreRequisites(FunctionStartAnalyzer.java:251)
+	at ghidra.app.analyzers.FunctionStartAnalyzer$PossibleFunctionStartAction.apply(FunctionStartAnalyzer.java:686)
+	at ghidra.util.bytesearch.MemoryBytePatternSearcher.processMatch(MemoryBytePatternSearcher.java:148)
+	at ghidra.util.bytesearch.MemoryBytePatternSearcher.lambda$search$0(MemoryBytePatternSearcher.java:131)
+	at ghidra.util.bytesearch.ProgramMemorySearcher.performSearch(ProgramMemorySearcher.java:164)
+	at ghidra.util.bytesearch.ProgramMemorySearcher.searchRange(ProgramMemorySearcher.java:150)
+	at ghidra.util.bytesearch.ProgramMemorySearcher.searchBlock(ProgramMemorySearcher.java:126)
+	at ghidra.util.bytesearch.ProgramMemorySearcher.search(ProgramMemorySearcher.java:117)
+	at ghidra.util.bytesearch.MemoryBytePatternSearcher.search(MemoryBytePatternSearcher.java:131)
+	at ghidra.app.analyzers.FunctionStartAnalyzer.added(FunctionStartAnalyzer.java:833)
+	at ghidra.app.plugin.core.analysis.AnalysisScheduler.runAnalyzer(AnalysisScheduler.java:186)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:37)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:24)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager$AnalysisTaskWrapper.run(AutoAnalysisManager.java:660)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:760)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:639)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:604)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1060)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1591)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1751)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1692)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1776)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:452)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+Caused by: java.io.IOException: Locked buffer: 3676
+	at db.buffers.BufferMgr.getBufferNode(BufferMgr.java:830)
+	at db.buffers.BufferMgr.getBuffer(BufferMgr.java:968)
+	at db.NodeMgr.getLongKeyNode(NodeMgr.java:257)
+	at db.Table.getRecord(Table.java:701)
+	at ghidra.program.database.code.InstDBAdapterV1.getRecord(InstDBAdapterV1.java:95)
+	at ghidra.program.database.code.CodeManager.getInstructionDB(CodeManager.java:3081)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1326)
+	... 30 more
+ 
+2026-10-15 02:58:19 ERROR (AnalysisTaskWrapper) Analysis Task: Create Address Tables - java.io.IOException: Locked buffer: 3676 ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Locked buffer: 3676
+	at ghidra.framework.data.DomainObjectAdapter.fatalErrorOccurred(DomainObjectAdapter.java:499)
+	at ghidra.framework.data.DomainObjectAdapterDB.dbError(DomainObjectAdapterDB.java:211)
+	at ghidra.program.database.code.CodeManager.getDefinedAddressAfter(CodeManager.java:2788)
+	at ghidra.program.database.code.DataDB.computeLength(DataDB.java:193)
+	at ghidra.program.database.code.DataDB.getLength(DataDB.java:127)
+	at ghidra.program.database.code.CodeUnitDB.getMaxAddress(CodeUnitDB.java:267)
+	at ghidra.app.plugin.core.disassembler.AddressTableAnalyzer.removeDefined(AddressTableAnalyzer.java:332)
+	at ghidra.app.plugin.core.disassembler.AddressTableAnalyzer.added(AddressTableAnalyzer.java:135)
+	at ghidra.app.plugin.core.analysis.AnalysisScheduler.runAnalyzer(AnalysisScheduler.java:186)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:37)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:24)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager$AnalysisTaskWrapper.run(AutoAnalysisManager.java:660)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:760)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:639)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:604)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1060)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1591)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1751)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1692)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1776)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:452)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+Caused by: java.io.IOException: Locked buffer: 3676
+	at db.buffers.BufferMgr.getBufferNode(BufferMgr.java:830)
+	at db.buffers.BufferMgr.getBuffer(BufferMgr.java:968)
+	at db.NodeMgr.getLongKeyNode(NodeMgr.java:257)
+	at db.Table$LongKeyRecordIterator.<init>(Table.java:2083)
+	at db.Table.iterator(Table.java:1868)
+	at ghidra.program.database.map.AddressKeyRecordIterator.<init>(AddressKeyRecordIterator.java:146)
+	at ghidra.program.database.map.AddressKeyRecordIterator.<init>(AddressKeyRecordIterator.java:62)
+	at ghidra.program.database.code.InstDBAdapterV1.getRecordAfter(InstDBAdapterV1.java:111)
+	at ghidra.program.database.code.CodeManager.getDefinedAddressAfter(CodeManager.java:2785)
+	... 21 more
+ 
+2026-10-15 02:58:19 ERROR (AnalysisTaskWrapper) Analysis Task: WindowsResourceReference - java.io.IOException: Locked buffer: 3676 ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Locked buffer: 3676
+	at ghidra.framework.data.DomainObjectAdapter.fatalErrorOccurred(DomainObjectAdapter.java:499)
+	at ghidra.framework.data.DomainObjectAdapterDB.dbError(DomainObjectAdapterDB.java:211)
+	at ghidra.program.database.code.CodeManager.getCodeUnitAt(CodeManager.java:881)
+	at ghidra.program.database.code.CodeManager.getCodeUnitAt(CodeManager.java:854)
+	at ghidra.program.database.code.CodeManager.getCodeUnitContaining(CodeManager.java:1024)
+	at ghidra.program.database.ListingDB.getCodeUnitContaining(ListingDB.java:60)
+	at ghidra.program.util.ProgramLocation.getCodeUnitAddress(ProgramLocation.java:441)
+	at ghidra.program.util.ProgramLocation.<init>(ProgramLocation.java:130)
+	at ghidra.app.plugin.prototype.MicrosoftCodeAnalyzerPlugin.WindowsResourceReferenceAnalyzer.runScript(WindowsResourceReferenceAnalyzer.java:84)
+	at ghidra.app.plugin.prototype.MicrosoftCodeAnalyzerPlugin.WindowsResourceReferenceAnalyzer.added(WindowsResourceReferenceAnalyzer.java:72)
+	at ghidra.app.plugin.core.analysis.AnalysisScheduler.runAnalyzer(AnalysisScheduler.java:186)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:37)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:24)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager$AnalysisTaskWrapper.run(AutoAnalysisManager.java:660)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:760)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:639)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:604)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1060)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1591)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1751)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1692)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1776)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:452)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+Caused by: java.io.IOException: Locked buffer: 3676
+	at db.buffers.BufferMgr.getBufferNode(BufferMgr.java:830)
+	at db.buffers.BufferMgr.getBuffer(BufferMgr.java:968)
+	at db.NodeMgr.getLongKeyNode(NodeMgr.java:257)
+	at db.Table.getRecord(Table.java:701)
+	at ghidra.program.database.code.InstDBAdapterV1.getRecord(InstDBAdapterV1.java:95)
+	at ghidra.program.database.code.CodeManager.getInstructionDB(CodeManager.java:3081)
+	at ghidra.program.database.code.CodeManager.getCodeUnitAt(CodeManager.java:869)
+	... 23 more
+ 
+2026-10-15 02:58:20 ERROR (StackVariableAnalyzer) caught exception java.util.concurrent.ExecutionException: ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Locked buffer: 3676
+	at java.base/java.util.concurrent.FutureTask.report(FutureTask.java:122)
+	at java.base/java.util.concurrent.FutureTask.get(FutureTask.java:191)
+	at generic.concurrent.QResult.<init>(QResult.java:40)
+	at generic.concurrent.FutureTaskMonitor.run(FutureTaskMonitor.java:77)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Locked buffer: 3676
+	at ghidra.framework.data.DomainObjectAdapter.fatalErrorOccurred(DomainObjectAdapter.java:499)
+	at ghidra.framework.data.DomainObjectAdapterDB.dbError(DomainObjectAdapterDB.java:211)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1333)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1315)
+	at ghidra.program.database.ListingDB.getInstructionAt(ListingDB.java:106)
+	at ghidra.program.util.SymbolicPropogator.getInstructionAt(SymbolicPropogator.java:769)
+	at ghidra.program.util.SymbolicPropogator.flowConstants(SymbolicPropogator.java:594)
+	at ghidra.program.util.SymbolicPropogator.flowConstants(SymbolicPropogator.java:479)
+	at ghidra.program.util.SymbolicPropogator.flowConstants(SymbolicPropogator.java:215)
+	at ghidra.app.cmd.function.NewFunctionStackAnalysisCmd.createStackPointerVariables(NewFunctionStackAnalysisCmd.java:362)
+	at ghidra.app.cmd.function.NewFunctionStackAnalysisCmd.analyzeFunction(NewFunctionStackAnalysisCmd.java:211)
+	at ghidra.app.cmd.function.NewFunctionStackAnalysisCmd.applyTo(NewFunctionStackAnalysisCmd.java:132)
+	at ghidra.app.cmd.function.NewFunctionStackAnalysisCmd.applyTo(NewFunctionStackAnalysisCmd.java:41)
+	at ghidra.app.plugin.core.function.StackVariableAnalyzer.analyzeLocation(StackVariableAnalyzer.java:82)
+	at ghidra.app.services.AbstractAnalyzer$1.process(AbstractAnalyzer.java:181)
+	at ghidra.app.services.AbstractAnalyzer$1.process(AbstractAnalyzer.java:170)
+	at generic.concurrent.ConcurrentQ$CallbackCallable.call(ConcurrentQ.java:706)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at generic.concurrent.FutureTaskMonitor.run(FutureTaskMonitor.java:75)
+	... 3 more
+Caused by: java.io.IOException: Locked buffer: 3676
+	at db.buffers.BufferMgr.getBufferNode(BufferMgr.java:830)
+	at db.buffers.BufferMgr.getBuffer(BufferMgr.java:968)
+	at db.NodeMgr.getLongKeyNode(NodeMgr.java:257)
+	at db.Table.getRecord(Table.java:701)
+	at ghidra.program.database.code.InstDBAdapterV1.getRecord(InstDBAdapterV1.java:95)
+	at ghidra.program.database.code.CodeManager.getInstructionDB(CodeManager.java:3081)
+	at ghidra.program.database.code.CodeManager.getInstructionAt(CodeManager.java:1326)
+	... 19 more
+ 
+2026-10-15 02:58:20 ERROR (StringsAnalyzer) Unexpected exception during string analysis ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Locked buffer: 3676
+	at ghidra.framework.data.DomainObjectAdapter.fatalErrorOccurred(DomainObjectAdapter.java:499)
+	at ghidra.framework.data.DomainObjectAdapterDB.dbError(DomainObjectAdapterDB.java:211)
+	at ghidra.program.database.code.CodeManager.getCodeUnitAt(CodeManager.java:881)
+	at ghidra.program.database.code.CodeManager.getCodeUnitAt(CodeManager.java:854)
+	at ghidra.program.database.code.CodeManager.getCodeUnitContaining(CodeManager.java:1024)
+	at ghidra.program.database.code.CodeManager.getDataContaining(CodeManager.java:1560)
+	at ghidra.program.database.ListingDB.getDataContaining(ListingDB.java:147)
+	at ghidra.program.model.data.DataUtilities.isUndefinedRange(DataUtilities.java:660)
+	at ghidra.app.plugin.core.string.StringsAnalyzer.createStringIfValid(StringsAnalyzer.java:409)
+	at ghidra.app.plugin.core.string.StringsAnalyzer.lambda$findStrings$0(StringsAnalyzer.java:645)
+	at ghidra.program.util.string.StringSearcher.processSequence(StringSearcher.java:56)
+	at ghidra.program.util.string.AbstractStringSearcher.searchRange(AbstractStringSearcher.java:172)
+	at ghidra.program.util.string.AbstractStringSearcher.search(AbstractStringSearcher.java:122)
+	at ghidra.app.plugin.core.string.StringsAnalyzer.findStrings(StringsAnalyzer.java:650)
+	at ghidra.app.plugin.core.string.StringsAnalyzer.added(StringsAnalyzer.java:326)
+	at ghidra.app.plugin.core.analysis.AnalysisScheduler.runAnalyzer(AnalysisScheduler.java:186)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:37)
+	at ghidra.app.plugin.core.analysis.AnalysisTask.applyTo(AnalysisTask.java:24)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager$AnalysisTaskWrapper.run(AutoAnalysisManager.java:660)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:760)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:639)
+	at ghidra.app.plugin.core.analysis.AutoAnalysisManager.startAnalysis(AutoAnalysisManager.java:604)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1060)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1591)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1751)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1692)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1776)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:452)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+Caused by: java.io.IOException: Locked buffer: 3676
+	at db.buffers.BufferMgr.getBufferNode(BufferMgr.java:830)
+	at db.buffers.BufferMgr.getBuffer(BufferMgr.java:968)
+	at db.NodeMgr.getLongKeyNode(NodeMgr.java:257)
+	at db.Table.getRecord(Table.java:701)
+	at ghidra.program.database.code.InstDBAdapterV1.getRecord(InstDBAdapterV1.java:95)
+	at ghidra.program.database.code.CodeManager.getInstructionDB(CodeManager.java:3081)
+	at ghidra.program.database.code.CodeManager.getCodeUnitAt(CodeManager.java:869)
+	... 28 more
+ 
+2026-10-15 02:58:20 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.273 secs
+    Apply Data Archives                        0.657 secs
+    Call-Fixup Installer                       0.191 secs
+    Create Address Tables                      0.000 secs
+    Create Function                            3.150 secs
+    Data Reference                             0.000 secs
+    Decompiler Switch Analysis                29.010 secs
+    Demangler Microsoft                        0.052 secs
+    Disassemble                                5.368 secs
+    Disassemble Entry Points                   6.157 secs
+    Embedded Media                             0.234 secs
+    External Entry References                  0.000 secs
+    Function ID                                0.026 secs
+    Function Start Pre Search                  0.074 secs
+    Function Start Search                      1.037 secs
+    Function Start Search After Code           0.038 secs
+    Function Start Search After Data           0.047 secs
+    Function Start Search delayed - One Time   0.002 secs
+    Non-Returning Functions - Discovered       3.273 secs
+    Non-Returning Functions - Known            0.009 secs
+    PDB Universal                              0.010 secs
+    Reference                                  0.005 secs
+    Scalar Operand References                  0.003 secs
+    Shared Return Calls                        1.445 secs
+    Stack                                      0.529 secs
+    Subroutine References                      0.989 secs
+    WindowsResourceReference                   0.003 secs
+    X86 Function Callee Purge                  9.469 secs
+    x86 Constant Reference Analyzer           30.761 secs
+-----------------------------------------------------
+     Total Time   92 secs
+-----------------------------------------------------
+  
+2026-10-15 02:58:20 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///tmp/in/t5mp.exe  
+2026-10-15 02:58:20 ERROR (HeadlessAnalyzer) REPORT: Can't checkpoint with locked buffers (1 locks found) ghidra.util.exception.AssertException: Can't checkpoint with locked buffers (1 locks found)
+	at db.buffers.BufferMgr.checkpoint(BufferMgr.java:1194)
+	at db.DBHandle.doEndTransaction(DBHandle.java:521)
+	at db.DBHandle.endTransaction(DBHandle.java:493)
+	at ghidra.framework.data.DomainObjectTransactionManager.endTransaction(DomainObjectTransactionManager.java:152)
+	at ghidra.framework.data.DomainObjectAdapterDB.endTransaction(DomainObjectAdapterDB.java:380)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1084)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1591)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1751)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1692)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1776)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:452)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+ 
+2026-10-15 02:58:20 ERROR (HeadlessAnalyzer) REPORT: Import failed for file: file:///tmp/in/t5mp.exe  
