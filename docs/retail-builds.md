@@ -9,7 +9,7 @@ retail build has none of that and has to inherit it function by function.
 | Build | Exe (PDB name in debug dir) | Linked | Config | sha256 |
 |---|---|---|---|---|
 | CoDMPServer | CoDMPServer.exe | 2010-11-05 | `CoDMPRelease DedicatedServer - PC` | 4e325afa…eff5 |
-| CoDMPServer_s | CoDMPServer_s.exe | 2011-08-31 | (server, partial PDB) | 3eb933d8…c9e5 |
+| CoDMPServer_s | CoDMPServer_s.exe | 2011-08-31 | (server, partial PDB) | 3eb933d8…c7b9 |
 | **t5mp** (retail MP) | BlackOpsMP.exe (`CoDMPSteam_CEG_bin\BlackOpsMP.pdb`) | 2011-11-03 | `CoDMPSteam_CEG` | 6a544494…c3fb |
 | t5sp (retail SP) | BlackOps.exe (`CoDSteam_CEG_bin\BlackOps.pdb`) | 2011-09-01 | `CoDSteam_CEG` | f968ce5b…230a |
 
