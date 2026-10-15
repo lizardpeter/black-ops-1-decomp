@@ -5,7 +5,7 @@
 """
 from collections import Counter, defaultdict
 
-from model import LADDER, ROOT, config, load
+from model import read_tsv, LADDER, ROOT, config, load
 
 
 def bar(done, total, width=20):
@@ -39,6 +39,14 @@ def main():
                 out.append(f"| `{name}` | {n:,} | {sum(cc[t] for t in LADDER[3:]):,} | "
                            f"{sum(cc[t] for t in LADDER[5:]):,} |")
             out.append("")
+    bugs = read_tsv(ROOT / "records" / "bugs.tsv") if (ROOT / "records" / "bugs.tsv").exists() else []
+    if bugs:
+        by = Counter((b["priority"], b["enhanced"].split()[0]) for b in bugs)
+        out += ["## Bug ledger (records/bugs.tsv)", "", "| priority | planned | fixed | keep |", "|---|---:|---:|---:|"]
+        for pr in ("high", "medium", "low"):
+            out.append(f"| {pr} | {by[(pr, 'planned')]} | {by[(pr, 'fixed')]} | {by[(pr, 'keep')]} |")
+        out += ["", f"{len(bugs)} findings: " + ", ".join(f"{k} {v}" for k, v in
+                                                        sorted(Counter(b['kind'] for b in bugs).items())) + ".", ""]
     (ROOT / "STATUS.md").write_text("\n".join(out))
     print("\n".join(out[:20]))
 

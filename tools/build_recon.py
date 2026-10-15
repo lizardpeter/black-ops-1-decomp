@@ -29,6 +29,26 @@ CFLAGS = ["--target=i686-pc-windows-msvc", "-O0", "-msse2", "-mfpmath=sse", "-ff
 csv.field_size_limit(1 << 30)
 
 
+# Symbols defined in src/ (or headers) that share a plain name with an original function on purpose, with
+# the reason. Everything else that does is a prototype mismatch and stops the build.
+PROTOTYPE_ALLOWLIST = {
+    # tools/recon/include/math.h: VC90's C++ float overloads (inline, call the double CRT function)
+    "?acosf@@YAMM@Z": "math.h float overload", "?asinf@@YAMM@Z": "math.h float overload",
+    "?atan2f@@YAMMM@Z": "math.h float overload", "?atanf@@YAMM@Z": "math.h float overload",
+    "?cosf@@YAMM@Z": "math.h float overload", "?sinf@@YAMM@Z": "math.h float overload",
+    "?tanf@@YAMM@Z": "math.h float overload", "?expf@@YAMM@Z": "math.h float overload",
+    "?logf@@YAMM@Z": "math.h float overload", "?powf@@YAMMM@Z": "math.h float overload",
+    "?sqrtf@@YAMM@Z": "math.h float overload", "?floorf@@YAMM@Z": "math.h float overload",
+}
+
+
+def base_name(sym):
+    """Plain function name of a decorated (or C) symbol: ?Vec3Dot@@YAMQBM0@Z -> Vec3Dot, _memset -> memset."""
+    if sym.startswith("?"):
+        return sym[1:].split("@", 1)[0]
+    return sym.lstrip("_").split("@", 1)[0]
+
+
 def run(*cmd):
     subprocess.run([str(c) for c in cmd], check=True)
 
@@ -93,6 +113,16 @@ def main():
     stray = [e for e in exports if e not in orig and e.lstrip("_") not in ("fltused",)]
     exports = [e for e in exports if e in orig]
     rows = [r for r in rows if r.split("\t")[0] in orig]
+    # A stray symbol whose plain name is an original function means a wrong prototype (parameter or return
+    # type, constness, calling convention): without this check the function would silently drop out of
+    # testing. Helpers that legitimately share a name with an original function go in PROTOTYPE_ALLOWLIST.
+    orig_names = {}
+    for o in orig:
+        orig_names.setdefault(base_name(o), []).append(o)
+    mismatched = [f"{e}  (original: {', '.join(orig_names[base_name(e)])})" for e in stray
+                  if base_name(e) in orig_names and e not in PROTOTYPE_ALLOWLIST]
+    if mismatched:
+        sys.exit("prototype differs from the original's decorated name:\n  " + "\n  ".join(mismatched))
     if stray:
         print("note: defined in src/ but not in the original MAP (not exported):", ", ".join(stray))
     missing = [u for u in undefined if u not in orig and u not in statics]

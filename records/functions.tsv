@@ -1,15 +1,40 @@
 build	va	status	src	note
+CoDMPServer	00405F20	matches	src/aim_assist/aim_assist.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	00541420	matches	src/client_mp/cl_cgame_mp.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	00551BF0	matches	src/client_mp/cl_input_mp.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	00551CE0	matches	src/client_mp/cl_input_mp.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	00553F90	matches	src/client_mp/cl_input_mp.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	00554630	matches	src/client_mp/cl_input_mp.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A7DE0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A7E00	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A7E20	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A7E40	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007A7F30	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A7F70	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A7F90	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A8010	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A80B0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A8150	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A81D0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A8270	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A85A0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007A85F0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007A8610	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A8640	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A86F0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007A8770	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007AD780	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007AD880	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007AD980	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007ADD10	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007AF0E0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A87E0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A8900	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A8D10	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007A8D40	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007AFA80	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A8E00	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A8F00	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A9030	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A9210	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A9240	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A92E0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A9360	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007A94E0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007A9660	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007A9780	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007A9B80	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
@@ -52,12 +77,16 @@ CoDMPServer	007AD3E0	matches	src/universal/com_math.cpp	differential test (emula
 CoDMPServer	007AD490	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007AD540	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007AD610	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007AD780	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007AD7F0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007AD880	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007AD8D0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007AD980	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007ADA00	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007ADB00	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007ADBE0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007ADC60	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007ADD10	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007ADD90	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007ADF60	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007AE000	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
@@ -70,6 +99,7 @@ CoDMPServer	007AE930	matches	src/universal/com_math.cpp	differential test (emula
 CoDMPServer	007AEBB0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007AECC0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007AEFB0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007AF0E0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007AF140	compiles	src/universal/com_math.cpp	behaves identically, but its static jump table Ljmptab stores its own code addresses, which can never equal the original's; the global-write check fails by design
 CoDMPServer	007AF3A0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007AF520	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
@@ -78,6 +108,7 @@ CoDMPServer	007AF6A0	matches	src/universal/com_math.cpp	differential test (emula
 CoDMPServer	007AF790	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007AF8E0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007AF9D0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007AFA80	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007AFA90	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007AFAF0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007AFB70	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
@@ -90,28 +121,23 @@ CoDMPServer	007B0B70	matches	src/universal/com_math.cpp	differential test (emula
 CoDMPServer	007B1080	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007B1340	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007B1A00	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A7DE0	compiles	src/universal/com_math.cpp	not testable in the emulator: track_static_alloc_internal needs runtime state that is never set up there; call rebuilt with the original arguments
-CoDMPServer	007A7E00	compiles	src/universal/com_math.cpp	not testable in the emulator: calls the CRT rand(), which needs thread-local CRT state
-CoDMPServer	007A7E20	compiles	src/universal/com_math.cpp	not testable in the emulator: calls random() -> CRT rand(), which needs thread-local CRT state
-CoDMPServer	007A7E40	compiles	src/universal/com_math.cpp	not testable in the emulator: calls crandom() -> CRT rand(), which needs thread-local CRT state
-CoDMPServer	007A7F70	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A7F90	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A8010	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A80B0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A8150	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A81D0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A8270	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A85A0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A8640	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A86F0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A87E0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A8900	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A8D10	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A8E00	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A8F00	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A9030	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A9210	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A9240	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A92E0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A9360	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	007A94E0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	00546E80	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007D8760	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007D8780	compiles	src/win32/win_input.cpp	not testable in the emulator yet: GPad_InitAll registers dvars, which copy their names into the script string table (MT), an engine subsystem the harness does not initialize; the original raises MT_Error
+CoDMPServer	007D8790	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007D87E0	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007D8800	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007D8890	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007D88C0	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007D88D0	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007D8910	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007D89B0	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007D8A00	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007D8A50	compiles	src/win32/win_input.cpp	not testable in the emulator yet: calls IN_StartupGamepads (see there); its other calls are tested on their own
+CoDMPServer	007D8A70	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007D8A80	compiles	src/win32/win_input.cpp	not testable in the emulator yet: Dvar_RegisterBool copies the name into the script string table (MT), which the harness does not initialize
+CoDMPServer	007D8AB0	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007D8AE0	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007D8B50	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007D8E20	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007D8F60	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90

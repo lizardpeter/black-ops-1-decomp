@@ -4,11 +4,14 @@
     python3 tests/differential/run.py [--check-records] [-k substring]
 
 Every function the reconstruction exports is tested. Hand-written CASES in test_*.py are used when a
-function has them; otherwise inputs are generated from the original prototype (auto.py).
+function has them; otherwise inputs are generated from the original prototype (auto.py). A case may give a
+setup(fixture, state) that builds the state each input needs (dvars, globals, the Win32 window model);
+inputs are then {"args": [...], "state": ...}.
 
 For each input, the original and the reconstruction are called on identical arguments. Results must
-match exactly: return value (floats bit-exact, NaN == NaN), every pointer buffer, and every byte the
-call wrote into the original image's globals. Inputs on which the ORIGINAL itself crashes are skipped;
+match exactly: return value (floats bit-exact, NaN == NaN), every pointer buffer, every byte the
+call wrote into the original image's globals, every Win32 call made (in order, with arguments) and the
+final state of the harness's window model. Inputs on which the ORIGINAL itself crashes are skipped;
 a function with too few usable inputs is reported as untestable, not passed.
 
 Writes build/test-results.tsv. With --check-records, fails if records/ claims `matches` (or better)
@@ -86,16 +89,23 @@ def main():
             verdict, used = "missing: no export with the original decorated name", 0
         else:
             verdict, used = "pass", 0
-            for args in case["inputs"]:
-                want = m.call(va, args, case["ret"])
+            setup = case.get("setup")
+            for inp in case["inputs"]:
+                # an input is a list of arguments, or {"args": [...], "state": ...} for case["setup"]
+                args, state = (inp.get("args", []), inp.get("state")) if isinstance(inp, dict) else (inp, None)
+                want = m.call(va, args, case["ret"], setup, state)
                 if isinstance(want[0], str) and want[0].startswith("fault"):
                     continue  # the original itself crashes on this input: not a usable case
-                got = m.call(target, args, case["ret"])
+                got = m.call(target, args, case["ret"], setup, state)
                 used += 1
-                # recon globals live at the original's addresses (hybrid link), so writes compare 1:1
-                if not (same(want[0], got[0]) and want[1] == got[1] and want[2] == got[2]):
-                    verdict = (f"FAIL args={args!r}\n       original={want[0]!r} bufs_equal={want[1] == got[1]} "
-                               f"globals_equal={want[2] == got[2]}\n       recon   ={got[0]!r}")
+                # recon globals live at the original's addresses (hybrid link), so writes compare 1:1;
+                # Win32 calls (want[3]) and the final window model (want[4]) must match too
+                if not (same(want[0], got[0]) and want[1:] == got[1:]):
+                    verdict = (f"FAIL args={args!r} state={state!r}\n       original={want[0]!r} bufs_equal={want[1] == got[1]} "
+                               f"globals_equal={want[2] == got[2]} win32_calls_equal={want[3] == got[3]} "
+                               f"window_equal={want[4] == got[4]}\n       recon   ={got[0]!r}")
+                    if want[3] != got[3]:
+                        verdict += f"\n       calls original={want[3]}\n       calls recon   ={got[3]}"
                     break
             if verdict == "pass" and used < min(MIN_USABLE, len(case["inputs"])):
                 verdict = f"untestable: original faults on {len(case['inputs']) - used}/{len(case['inputs'])} inputs"

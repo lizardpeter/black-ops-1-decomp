@@ -29,13 +29,27 @@ analysis/<build>/    GENERATED per build
   ghidra/              Ghidra exports + the saved Ghidra project (project.tar.gz, split into parts)
   logs/                pipeline logs
 records/             AUTHORED small facts; the only input to the graph
-src/ include/        AUTHORED reconstruction, mirroring the original source tree from the PDB
+  functions.tsv        status of every reconstructed function (see the ladder below)
+  bugs.tsv             everything in the original worth fixing (see "Faithful and enhanced")
+src/ include/        AUTHORED faithful reconstruction, mirroring the original source tree from the PDB
 tests/               match / differential tests
 docs/<topic>.md      subsystems, formats, protocols. Topic names, never dates.
 tools/               pipeline scripts (ghidra/, pdb/, map/, graph/)
 ```
 
 Folder and file names describe *what*, never *when*. Dates belong in commit messages.
+
+## Faithful and enhanced
+
+`src/` is the **faithful** decomp: original behaviour, bugs included, verified function by function. Never fix
+a bug in `src/`. An **enhanced** build (the faithful code plus overrides in `enhanced/`, each recorded in
+`records/patches.tsv`) is created with the first enhancement.
+
+**Everything worth fixing goes in `records/bugs.tsv`**, not only outright bugs: id (`B` + 4 digits), build, va,
+function, source, kind (`security`, `crash`, `hang`, `logic`, `ub`, `robustness`, `limit`, `precision`,
+`performance`, `quality`), priority (`high`, `medium`, `low`), description, evidence (the test or disassembly
+that shows it, and whether a current caller can trigger it), and `enhanced` (`planned`, `fixed <patch id>`, or
+`keep` when the original behaviour is wanted). It is the enhanced build's fix queue.
 
 ## Function status ladder
 

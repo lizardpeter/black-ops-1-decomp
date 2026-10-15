@@ -63,6 +63,13 @@ __forceinline float I_fmax(float x, float y)
 	return x - y >= 0.0f ? x : y;
 }
 
+// universal/com_math.h (line not confirmed): the min counterpart of I_fmax, as client_mp/cl_input_mp.cpp
+// expands it
+__forceinline float I_fmin(float x, float y)
+{
+	return x - y >= 0.0f ? y : x;
+}
+
 // VC90 math.h fabs(float) as compiled with SSE2: andps with the sign mask
 __forceinline float I_fabs(float f)
 {
