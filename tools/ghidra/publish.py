@@ -45,7 +45,9 @@ def group_of(va, pdb, mapobj):
         lib = Path(m["lib"]).stem if m["lib"] else ""
         obj = Path(m["obj"]).stem
         return safe((f"_lib/{lib}/{obj}" if lib else f"_obj/{obj}").lower()), p
-    return "_unattributed", p
+    # No PDB/MAP source for this function (retail builds): group by 64 KB address block until matching
+    # against a reference build assigns it a source file.
+    return f"_unattributed/{va[:4]}0000", p
 
 
 def main():

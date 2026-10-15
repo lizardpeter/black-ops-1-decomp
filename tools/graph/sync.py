@@ -80,8 +80,8 @@ def main():
         if not fns:
             continue
         per_build[b["id"]] = fns
-        builds.append({"id": b["id"], "timestamp": b["timestamp"], "exe_sha256": b["exe"]["sha256"],
-                       "pdb_guid": b["pdb_guid"]})
+        builds.append({"id": b["id"], "timestamp": b.get("timestamp", ""), "exe_sha256": b["exe"]["sha256"],
+                       "pdb_guid": b.get("pdb_guid", "")})
         files |= {(f.source, f.subsystem) for f in fns.values() if f.source}
     manifest["imports"].append(write_jsonl("builds", builds))
     manifest["imports"].append(write_jsonl("sourcefiles", [{"path": p, "subsystem": s} for p, s in sorted(files)]))

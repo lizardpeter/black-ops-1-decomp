@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Download one build's originals (exe, pdb, map) from R2 and verify their sha256.
+"""Download one build's originals (exe, and pdb/map when the build has them) from R2 and verify their sha256.
 
     python3 tools/fetch_originals.py <build-id> <dest-dir>
 """
@@ -19,6 +19,8 @@ def main():
     build = next(b for b in cfg["build"] if b["id"] == build_id)
     dest.mkdir(parents=True, exist_ok=True)
     for role in ("exe", "pdb", "map"):
+        if role not in build:  # retail builds have no PDB/MAP
+            continue
         spec = build[role]
         out = dest / f"{build_id}.{role}"
         url = cfg["r2_public"] + urllib.parse.quote(spec["key"])

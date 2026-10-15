@@ -15,6 +15,21 @@ retail build has none of that and has to inherit it function by function.
 
 No PDB, MAP or Rich header ships with the retail exes. Multiplayer (`t5mp`) comes first.
 
+### Provenance
+
+The retail exes come from Plutonium's executable set (R2 `Downloads/plu_exes/`, alongside its t4/t6/iw5/iw6
+exes), named `t5mp.exe` / `t5sp.exe` rather than the retail `BlackOpsMP.exe` / `BlackOps.exe`.
+
+- Both carry Valve Corporation Authenticode signatures (as Steam CEG builds did) and their original 2011
+  link timestamps and Treyarch build paths.
+- Neither signature verifies: the recomputed Authenticode digest differs from the signed one, and the PE
+  checksum doesn't match either. The files were modified after Valve signed them, most likely to remove
+  the CEG DRM.
+
+So almost all of the code is Treyarch's 2011 retail output, but some functions (DRM checks) are likely
+patched. Without an unmodified Steam copy to diff against, patched functions have to be found from the
+code itself; once identified they are recorded as patched, not as original.
+
 ## What the retail build looks like
 
 Measured with `tools/`-style throwaway scripts against CoDMPServer (numbers for t5mp):
