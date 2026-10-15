@@ -77,3 +77,30 @@ CoDMPServer_s matched blind, then scored with `tools/match/validate.py` against 
 Some "wrong" pairs are the same function with a changed prototype (e.g. `BG_LoadAnim` gained a
 parameter), so precision is slightly understated. Both server builds are compiled the same way; retail
 is harder, so its match rate and precision will be lower and are reported separately.
+
+## t5mp results
+
+`match.py CoDMPServer t5mp` (output: `analysis/t5mp/match/functions.tsv`). Ghidra finds 19,121 functions
+in t5mp, 18,959 of them non-thunk.
+
+| Method | Matches |
+|---|---:|
+| unique strings | 2,373 |
+| unique constants | 16 |
+| callee propagation | 2,651 |
+| caller propagation | 1,888 |
+| **all** | **6,928 (36.5% of t5mp)** |
+
+There is no ground truth for retail, so precision is estimated two ways:
+
+- **Call-graph consistency.** For each matched pair, how many of the retail function's matched callees
+  map to callees of the server function: 88.2% for string matches, 88.6% callee, 90.7% caller, 97.6%
+  constant. Propagated matches are as consistent as the string matches. The rest is mostly retail
+  inlining, which removes or adds call edges.
+- **Manual review** of 8 randomly sampled propagated matches against the server pseudocode
+  (`Huff_Init`, `EmitOpcode`, `LiveContracts_GetContractName`, `CG_UpdateViewOffset`,
+  `Bot_UpdateMovement`, `path_constraint_create`, `CXAPOBase::ValidateFormatDefault`, a libwww request
+  builder): all 8 correct.
+
+Matches by top-level source folder: third-party libs 1,409, other external code 505, universal 450,
+live 376, ui 349, gfx_d3d 336, qcommon 319, bgame 271, cgame 258, cgame_mp 253, game_mp 238.
