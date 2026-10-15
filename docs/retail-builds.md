@@ -60,3 +60,20 @@ Each retail function gets the identity of a server function only with recorded e
 
 The reconstructed source is then tested against retail with the same differential harness, at the matched
 addresses.
+
+## Matcher validation
+
+`tools/match/match.py` is checked on a pair with ground truth: CoDMPServer (reference) against
+CoDMPServer_s matched blind, then scored with `tools/match/validate.py` against _s's own MAP names.
+
+| Method | Matches | Precision |
+|---|---:|---:|
+| unique strings | 2,741 | 98.0% |
+| unique constants | 13 | 100% |
+| callee propagation | 1,658 | 97.0% |
+| caller propagation | 1,516 | 97.4% |
+| **all** | **5,928 (32.6% of _s)** | **97.6%** |
+
+Some "wrong" pairs are the same function with a changed prototype (e.g. `BG_LoadAnim` gained a
+parameter), so precision is slightly understated. Both server builds are compiled the same way; retail
+is harder, so its match rate and precision will be lower and are reported separately.
