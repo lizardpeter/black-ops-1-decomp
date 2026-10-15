@@ -82,6 +82,7 @@ jobs:
           /opt/ghidra/support/analyzeHeadless /tmp/proj t5 \
             -import /tmp/in/${{ matrix.build }}.exe \
             -scriptPath tools/ghidra \
+            -preScript PrepAnalysis.java \
             "${pdbargs[@]}" \
             -postScript ExportAll.java /tmp/raw \
             -analysisTimeoutPerFile 18000 \
