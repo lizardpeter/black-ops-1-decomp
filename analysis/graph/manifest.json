@@ -10,8 +10,8 @@
   "imports": [
     {
       "file": "t5/builds.jsonl",
-      "sha256": "f17c6aca36f0d6ccc52b3904f9a0f0b22f3ae0fc1ae07d24c81eedd389c5046b",
-      "rows": 2,
+      "sha256": "ea27b3ed033c839a6ac4c0ef9f120dab4425e6e3de53e14edf4832366e96fe50",
+      "rows": 4,
       "cypher": "UNWIND {{ROWS}} AS r MERGE (b:Build {id:r.id}) SET b.timestamp=r.timestamp, b.exe_sha256=r.exe_sha256, b.pdb_guid=r.pdb_guid"
     },
     {
@@ -33,6 +33,18 @@
       "cypher": "UNWIND {{ROWS}} AS r MATCH (b:Build {id:r.build}) MERGE (fn:Function {key:r.key}) SET fn.name = coalesce(fn.name, r.name), fn.symbol = r.symbol MERGE (fi:FunctionInstance {id:r.id}) SET fi.build=r.build, fi.va=r.va, fi.size=r.size, fi.status=r.status, fi.type=r.type, fi.src=r.src, fi.bytes_sha256=r.sha MERGE (fi)-[:INSTANCE_OF]->(fn) MERGE (fi)-[:IN_BUILD]->(b) WITH fn, r WHERE r.source <> '' MATCH (sf:SourceFile {path:r.source}) MERGE (fn)-[d:DEFINED_IN]->(sf) SET d.line=r.line"
     },
     {
+      "file": "t5/functions-t5mp.jsonl",
+      "sha256": "4c5d527449aa6810ee90a53433d4d0530a00d6281e87bd72af3586b86849155b",
+      "rows": 19121,
+      "cypher": "UNWIND {{ROWS}} AS r MATCH (b:Build {id:r.build}) MERGE (fn:Function {key:r.key}) SET fn.name = coalesce(fn.name, r.name), fn.symbol = r.symbol MERGE (fi:FunctionInstance {id:r.id}) SET fi.build=r.build, fi.va=r.va, fi.size=r.size, fi.status=r.status, fi.type=r.type, fi.src=r.src, fi.bytes_sha256=r.sha MERGE (fi)-[:INSTANCE_OF]->(fn) MERGE (fi)-[:IN_BUILD]->(b) WITH fn, r WHERE r.source <> '' MATCH (sf:SourceFile {path:r.source}) MERGE (fn)-[d:DEFINED_IN]->(sf) SET d.line=r.line"
+    },
+    {
+      "file": "t5/functions-t5sp.jsonl",
+      "sha256": "caf48aa34dbaa1eabbb1f2ab8d2223c8c84f546e7167452c906c1d6d488401c5",
+      "rows": 17530,
+      "cypher": "UNWIND {{ROWS}} AS r MATCH (b:Build {id:r.build}) MERGE (fn:Function {key:r.key}) SET fn.name = coalesce(fn.name, r.name), fn.symbol = r.symbol MERGE (fi:FunctionInstance {id:r.id}) SET fi.build=r.build, fi.va=r.va, fi.size=r.size, fi.status=r.status, fi.type=r.type, fi.src=r.src, fi.bytes_sha256=r.sha MERGE (fi)-[:INSTANCE_OF]->(fn) MERGE (fi)-[:IN_BUILD]->(b) WITH fn, r WHERE r.source <> '' MATCH (sf:SourceFile {path:r.source}) MERGE (fn)-[d:DEFINED_IN]->(sf) SET d.line=r.line"
+    },
+    {
       "file": "t5/calls-CoDMPServer.jsonl",
       "sha256": "7dae966b9687447aa32cf1618778249aca21a12bb74de63de9275b0ebbafdfcf",
       "rows": 95325,
@@ -42,6 +54,18 @@
       "file": "t5/calls-CoDMPServer_s.jsonl",
       "sha256": "6e0e53a9e69ab0416ea7f75b4dfd87c669afe1237d59cbaacdabafeb8762461e",
       "rows": 54831,
+      "cypher": "UNWIND {{ROWS}} AS r MATCH (a:FunctionInstance {id:r.caller}) MATCH (c:FunctionInstance {id:r.callee}) MERGE (a)-[e:CALLS]->(c) SET e.kind=r.kind"
+    },
+    {
+      "file": "t5/calls-t5mp.jsonl",
+      "sha256": "e433f597f1ed1c3eff96b7b70484c1352e3061bb61d10f42afbe955ccacf1cd5",
+      "rows": 62157,
+      "cypher": "UNWIND {{ROWS}} AS r MATCH (a:FunctionInstance {id:r.caller}) MATCH (c:FunctionInstance {id:r.callee}) MERGE (a)-[e:CALLS]->(c) SET e.kind=r.kind"
+    },
+    {
+      "file": "t5/calls-t5sp.jsonl",
+      "sha256": "794bc56bf5edf581dd9f8776e9450219f42568614217be99195b5365c197f776",
+      "rows": 55729,
       "cypher": "UNWIND {{ROWS}} AS r MATCH (a:FunctionInstance {id:r.caller}) MATCH (c:FunctionInstance {id:r.callee}) MERGE (a)-[e:CALLS]->(c) SET e.kind=r.kind"
     }
   ]
