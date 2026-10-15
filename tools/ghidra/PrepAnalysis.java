@@ -1,18 +1,24 @@
-// Pre-analysis script for every build: log the JVM heap actually available, and run the analyzers that
-// have exhausted the heap on these binaries with a single thread.
+// Pre-analysis script for every build: check the JVM heap actually available (abort below 8 GB), and run
+// the analyzers that have exhausted the heap on these binaries with a single thread.
 //
 // CoDMPServer_s and the retail t5mp/t5sp ran out of heap inside the x86 constant-propagation analyzer
 // within minutes; after that the program database is unusable for every later step.
 //@category T5
 import java.util.Map;
 
-import ghidra.app.script.GhidraScript;
+import ghidra.app.util.headless.HeadlessScript;
 
-public class PrepAnalysis extends GhidraScript {
+public class PrepAnalysis extends HeadlessScript {
 	@Override
 	public void run() throws Exception {
 		Runtime rt = Runtime.getRuntime();
 		println(String.format("JVM max heap: %d MB, processors: %d", rt.maxMemory() >> 20, rt.availableProcessors()));
+		if (rt.maxMemory() < (8L << 30)) {
+			// with the 2 GB default these binaries run out of heap minutes in and leave a corrupt database
+			printerr("JVM heap below 8 GB: MAXMEM was not applied to analyzeHeadless; aborting");
+			setHeadlessContinuationOption(HeadlessContinuationOption.ABORT_AND_DELETE);
+			return;
+		}
 
 		Map<String, String> options = getCurrentAnalysisOptionsAndValues(currentProgram);
 		for (Map.Entry<String, String> e : options.entrySet()) {

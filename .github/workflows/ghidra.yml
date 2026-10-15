@@ -66,12 +66,13 @@ jobs:
         run: |
           gh release download "$GHIDRA_TAG" --repo NationalSecurityAgency/ghidra --pattern 'ghidra_*_PUBLIC_*.zip' --dir /tmp
           unzip -q /tmp/ghidra_*.zip -d /opt && mv /opt/ghidra_* /opt/ghidra
-          sed -i 's/^#\?MAXMEM=.*/MAXMEM=13G/' /opt/ghidra/support/analyzeHeadless
-          echo 'VMARGS=-Xmx13g' >> /opt/ghidra/support/launch.properties
-          grep -n '^MAXMEM' /opt/ghidra/support/analyzeHeadless; free -g
+          # Ghidra 12 names the default MAXMEM_DEFAULT; PrepAnalysis.java aborts if the heap is still small
+          sed -i -E 's/^#?MAXMEM(_DEFAULT)?=.*/MAXMEM\1=13G/' /opt/ghidra/support/analyzeHeadless
+          grep -n 'MAXMEM' /opt/ghidra/support/analyzeHeadless; free -g
       - name: Fetch originals
         run: python3 tools/fetch_originals.py ${{ matrix.build }} /tmp/in
       - name: Analyze (with the original PDB when the build has one) and export
+        timeout-minutes: 180  # a Ghidra that hit an error can hang instead of exiting
         run: |
           mkdir -p /tmp/proj /tmp/raw
           pdbargs=()
@@ -85,8 +86,9 @@ jobs:
             -preScript PrepAnalysis.java \
             "${pdbargs[@]}" \
             -postScript ExportAll.java /tmp/raw \
-            -analysisTimeoutPerFile 18000 \
+            -analysisTimeoutPerFile 9000 \
             -log /tmp/raw/analyze.log -scriptlog /tmp/raw/analyze-scripts.log
+          test -s /tmp/raw/functions.tsv || { echo "::error::Ghidra produced no export; see analyze.log"; tar -C /tmp/proj -czf /tmp/raw/project.tar.gz .; exit 1; }
           # the saved Ghidra project itself: reused by the decompile shards and committed to git
           tar -C /tmp/proj -czf /tmp/raw/project.tar.gz .
           ls -la /tmp/raw
@@ -116,9 +118,9 @@ jobs:
         run: |
           gh release download "$GHIDRA_TAG" --repo NationalSecurityAgency/ghidra --pattern 'ghidra_*_PUBLIC_*.zip' --dir /tmp
           unzip -q /tmp/ghidra_*.zip -d /opt && mv /opt/ghidra_* /opt/ghidra
-          sed -i 's/^#\?MAXMEM=.*/MAXMEM=13G/' /opt/ghidra/support/analyzeHeadless
-          echo 'VMARGS=-Xmx13g' >> /opt/ghidra/support/launch.properties
-          grep -n '^MAXMEM' /opt/ghidra/support/analyzeHeadless; free -g
+          # Ghidra 12 names the default MAXMEM_DEFAULT; PrepAnalysis.java aborts if the heap is still small
+          sed -i -E 's/^#?MAXMEM(_DEFAULT)?=.*/MAXMEM\1=13G/' /opt/ghidra/support/analyzeHeadless
+          grep -n 'MAXMEM' /opt/ghidra/support/analyzeHeadless; free -g
       - uses: actions/download-artifact@v4
         with: { name: "raw-${{ matrix.build }}", path: /tmp/raw }
       - name: Decompile shard
