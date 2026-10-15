@@ -1,18 +1,18 @@
-2026-10-15 03:00:39 INFO  (LoggingInitialization) Using log config file: jar:file:/opt/ghidra/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
-2026-10-15 03:00:39 INFO  (LoggingInitialization) Using log file: /tmp/out/decompile-5.log  
-2026-10-15 03:00:39 DEBUG (GhidraObjectInputFilter) Including serial input filter: FileSystem/data/client.rmi.serial.filter  
-2026-10-15 03:00:39 INFO  (Preferences) Loading user preferences: /home/runner/.config/ghidra/ghidra_12.1.4_PUBLIC/preferences  
-2026-10-15 03:00:39 INFO  (ClassSearcher) Searching for classes...  
-2026-10-15 03:00:40 INFO  (ClassSearcher) Class search complete (924 ms)  
-2026-10-15 03:00:40 INFO  (DefaultSSLContextInitializer) Initializing SSL Context  
-2026-10-15 03:00:41 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
-2026-10-15 03:00:41 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
-2026-10-15 03:00:41 INFO  (DefaultTrustManagerFactory) Trust manager disabled, cacerts have not been set  
-2026-10-15 03:00:41 INFO  (FileCacheMaintenanceDaemon) Starting cache cleanup: /var/tmp/runner-ghidra/fscache2  
-2026-10-15 03:00:41 INFO  (FileCacheMaintenanceDaemon) Finished cache cleanup, estimated storage used: 0  
-2026-10-15 03:00:42 INFO  (AnalyzeHeadless) Headless startup complete (3996 ms)  
-2026-10-15 03:00:42 INFO  (ClassSearcher) Class searcher loaded 59 extension points (20 false positives)  
-2026-10-15 03:00:42 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+2026-10-15 08:46:29 INFO  (LoggingInitialization) Using log config file: jar:file:/opt/ghidra/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-10-15 08:46:29 INFO  (LoggingInitialization) Using log file: /tmp/out/decompile-5.log  
+2026-10-15 08:46:29 DEBUG (GhidraObjectInputFilter) Including serial input filter: FileSystem/data/client.rmi.serial.filter  
+2026-10-15 08:46:29 INFO  (Preferences) Loading user preferences: /home/runner/.config/ghidra/ghidra_12.1.4_PUBLIC/preferences  
+2026-10-15 08:46:29 INFO  (ClassSearcher) Searching for classes...  
+2026-10-15 08:46:30 INFO  (ClassSearcher) Class search complete (972 ms)  
+2026-10-15 08:46:30 INFO  (DefaultSSLContextInitializer) Initializing SSL Context  
+2026-10-15 08:46:31 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-10-15 08:46:31 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-10-15 08:46:31 INFO  (DefaultTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-10-15 08:46:31 INFO  (FileCacheMaintenanceDaemon) Starting cache cleanup: /var/tmp/runner-ghidra/fscache2  
+2026-10-15 08:46:31 INFO  (FileCacheMaintenanceDaemon) Finished cache cleanup, estimated storage used: 0  
+2026-10-15 08:46:31 INFO  (AnalyzeHeadless) Headless startup complete (2742 ms)  
+2026-10-15 08:46:31 INFO  (ClassSearcher) Class searcher loaded 59 extension points (20 false positives)  
+2026-10-15 08:46:31 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
     /opt/ghidra/Ghidra/Features/SystemEmulation/ghidra_scripts
     /opt/ghidra/Ghidra/Features/GnuDemangler/ghidra_scripts
     /home/runner/work/black-ops-1-decomp/black-ops-1-decomp/tools/ghidra
@@ -36,15 +36,16 @@
     /opt/ghidra/Ghidra/Features/FileFormats/ghidra_scripts
     /opt/ghidra/Ghidra/Features/BSim/ghidra_scripts
     /opt/ghidra/Ghidra/Features/BytePatterns/ghidra_scripts  
-2026-10-15 03:00:42 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
-2026-10-15 03:00:42 INFO  (HeadlessAnalyzer) Opening existing project: /tmp/proj/t5  
-2026-10-15 03:00:42 DEBUG (DefaultProjectManager) No tools found; Installing default tools  
-2026-10-15 03:00:42 DEBUG (DefaultProjectManager) 	no recent project directories found  
-2026-10-15 03:00:42 INFO  (HeadlessProject) Opening project: /tmp/proj/t5  
-2026-10-15 03:00:42 ERROR (HeadlessAnalyzer) Abort due to Headless analyzer error: Requested project program file(s) not found: t5mp.exe java.io.IOException: Requested project program file(s) not found: t5mp.exe
-	at ghidra.app.util.headless.HeadlessAnalyzer.processNoImport(HeadlessAnalyzer.java:1400)
-	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:449)
-	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
-	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
-	at ghidra.Ghidra.main(Ghidra.java:54)
- 
+2026-10-15 08:46:31 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-10-15 08:46:31 INFO  (HeadlessAnalyzer) Opening existing project: /tmp/proj/t5  
+2026-10-15 08:46:31 DEBUG (DefaultProjectManager) No tools found; Installing default tools  
+2026-10-15 08:46:31 DEBUG (DefaultProjectManager) 	no recent project directories found  
+2026-10-15 08:46:32 INFO  (HeadlessProject) Opening project: /tmp/proj/t5  
+2026-10-15 08:46:33 INFO  (HeadlessAnalyzer) REPORT: Processing read-only project file: /t5mp.exe  
+2026-10-15 08:46:34 INFO  (HeadlessAnalyzer) REPORT: Execute script: Decompile.java '/tmp/out/decomp-5.jsonl' '5' '6' '90'   
+2026-10-15 08:46:35 INFO  (HeadlessAnalyzer) SCRIPT: /home/runner/work/black-ops-1-decomp/black-ops-1-decomp/tools/ghidra/Decompile.java  
+2026-10-15 08:46:58 INFO  (GhidraScript) Decompile.java> shard 5: 1000 ok, 0 failed, 22s  
+2026-10-15 08:47:12 INFO  (GhidraScript) Decompile.java> shard 5: 2000 ok, 0 failed, 37s  
+2026-10-15 08:47:14 WARN  (DecompileCallback) Decompiling 007bc130: Unable to read bytes at ram:7226e8c3  
+2026-10-15 08:47:27 INFO  (GhidraScript) Decompile.java> shard 5: 3000 ok, 0 failed, 51s  
+2026-10-15 08:47:29 INFO  (GhidraScript) Decompile.java> shard 5 done: 3159 ok, 0 failed  
