@@ -9,12 +9,15 @@ import csv
 import functools
 import struct
 
-from harness import ROOT, bool_dvar_undefined_bytes
+from harness import ROOT, dvar_undefined_bytes
 
 BUILD = "CoDMPServer"
 DVAR_SIZE = 0x70        # sizeof(dvar_s) in this build (PDB; 8-byte aligned)
 DVAR_CURRENT = 0x18     # offsetof(dvar_s, current)
 DVAR_TYPE = 0x10        # offsetof(dvar_s, type)
+DVAR_LIMITS = 0x58      # offsetof(dvar_s, domain)
+DVAR_HASH = 0x08        # offsetof(dvar_s, hash): Com_HashString of the name
+DVAR_HASH_NEXT = 0x68   # offsetof(dvar_s, hashNext)
 DVAR_TYPES = {"bool": 0, "float": 1, "int": 5, "string": 7}
 
 
@@ -56,9 +59,21 @@ def static(source, scope, name):
     return _statics()[(source, scope, name)]
 
 
-def make_dvar(fx, global_va, enabled=None, value=None, integer=None, string=None):
+def dvar_hash(name):
+    """Com_HashString(name, 0) (qcommon): djb2 over the lowercased name, 32-bit signed."""
+    h = 0x1505
+    for c in name.lower().encode():
+        h = (h * 33 + c) & 0xFFFFFFFF
+    return h - (1 << 32) if h >= 1 << 31 else h
+
+
+def make_dvar(fx, global_va, enabled=None, value=None, integer=None, string=None, limits=None, name=None,
+              findable=False):
     """Build a dvar_s in fixture memory with the given current value; store its address in global_va
-    (the dvar pointer global). Returns the dvar's address."""
+    (the dvar pointer global; None for a dvar only reached by name). limits=(min, max) sets the domain of a
+    float or int dvar, as its registration would (Dvar_Set* assert that a new value is inside it).
+    findable=True links it into dvarHashTable under its name, so Dvar_FindVar("name") finds it.
+    Returns the dvar's address."""
     d = bytearray(DVAR_SIZE)
     if enabled is not None:
         kind, cur = "bool", bytes([1 if enabled else 0])
@@ -69,10 +84,19 @@ def make_dvar(fx, global_va, enabled=None, value=None, integer=None, string=None
     else:
         kind, cur = "int", struct.pack("<i", integer or 0)
     struct.pack_into("<I", d, DVAR_TYPE, DVAR_TYPES[kind])
-    struct.pack_into("<I", d, 0, fx.alloc(_dvar_name(global_va).encode() + b"\0"))  # dvar_s.name (asserted)
+    name = name or _dvar_name(global_va)
+    struct.pack_into("<I", d, 0, fx.alloc(name.encode() + b"\0"))  # dvar_s.name (asserted)
+    struct.pack_into("<i", d, DVAR_HASH, dvar_hash(name))
     d[DVAR_CURRENT:DVAR_CURRENT + len(cur)] = cur
+    if limits is not None:
+        struct.pack_into("<2f" if kind == "float" else "<2i", d, DVAR_LIMITS, *limits)
     va = fx.alloc(bytes(d))
-    fx.u32(global_va, va)
-    if kind == "bool":
-        fx.m.undefined.update(bool_dvar_undefined_bytes(va))
+    if global_va is not None:
+        fx.u32(global_va, va)
+    if findable:
+        bucket = static("universal/dvar.cpp", "", "dvarHashTable") + 4 * (dvar_hash(name) & 0x3FF)
+        fx.poke(va + DVAR_HASH_NEXT, bytes(fx.m.mu.mem_read(bucket, 4)))  # chain in front of what is there
+        fx.u32(bucket, va)
+    if kind in ("bool", "int", "float"):
+        fx.m.undefined.update(dvar_undefined_bytes(va, 1 if kind == "bool" else 4))
     return va

@@ -92,6 +92,13 @@ double rounding cannot distinguish) passes, as it should. Inputs are added until
 `CL_MouseMove` has targeted inputs where the speed cap decides the result, and out-of-domain values (NaN,
 infinity) that the game's dvar limits keep out but the code still has a defined answer for.
 
+The FOV and view-setup functions (docs/fov.md) got the same treatment: a wrong zoom level for one
+`adsZoomSelect`, unsigned instead of signed `%`, swapped `I_fmax` arguments, `>=` for `>` in the vehicle FOV,
+tween and near-plane tests, the deploy blend rewritten as `(d - t) / d`, truncation instead of the biased
+rounding in `R_StoreWindowSettings`, its pixel aspect computed in float instead of double, and `!= 0` for
+`> 0` in `CG_SetThirdPerson` all fail. Two rewrites that are provably equivalent pass (`(fov * k) * 0.5`
+vs `fov * (k * 0.5)`, exact; `>= 0` for `> 0` before a second `> 0` test).
+
 `--check-records` fails CI if `records/` claims `matches` for a function without a passing test.
 
 ### Limits
@@ -103,7 +110,12 @@ infinity) that the game's dvar limits keep out but the code still has a defined 
 - Functions that touch global game state need that state set up in the test first (see "The emulated
   machine").
 - A value the original leaves uninitialized (stack garbage) differs between any two builds by construction;
-  tests set up states where it is defined and the case is recorded in `records/bugs.tsv` (B0004).
+  tests set up states where it is defined and the case is recorded in `records/bugs.tsv` (B0004). Bytes the
+  original fills with stack garbage in globals (the unset part of a dvar's value after `Dvar_SetBool`,
+  `Dvar_SetInt` or `Dvar_SetFloat`, B0009) are left out of the comparison (`harness.dvar_undefined_bytes`).
+- Unicorn's x87 does not quiet a signaling NaN on `fld`, as a real CPU does, so a float copied through the
+  x87 stack (`T5_X87_COPY`, used where the disassembly shows one) and a plain SSE copy test the same. The
+  reconstruction follows the disassembly there; the harness cannot confirm it.
 
 ## Byte matching (planned)
 

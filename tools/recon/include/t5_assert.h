@@ -25,3 +25,9 @@ extern "C" bool Assert_MyHandler(const char *filename, int line, int type, const
 #define vassertp_at(line, expr, fmt, ...) \
 	do { if (!(expr) && !Assert_MyHandler(T5_ASSERT_FILE, line, 0, "%s\n\t" fmt, "(" #expr ")", __VA_ARGS__)) \
 		__debugbreak(); } while (0)
+
+// Assert_MyHandler(file, line, type, "%s\n\t<fmt>", "(expr)", args...): vassertp_at with an explicit assert
+// type (the original passes 1 for some range checks, e.g. cg_camera.cpp's viewFov check)
+#define vassertpt_at(line, type, expr, fmt, ...) \
+	do { if (!(expr) && !Assert_MyHandler(T5_ASSERT_FILE, line, type, "%s\n\t" fmt, "(" #expr ")", __VA_ARGS__)) \
+		__debugbreak(); } while (0)

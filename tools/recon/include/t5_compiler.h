@@ -10,4 +10,6 @@
 
 // A float copied through the x87 stack (fld / fstp), as VC90 sometimes compiles a plain float assignment.
 // The difference from a plain copy: a signaling NaN comes out quiet (fld raises invalid and quiets it).
+// On a real CPU, that is: the differential harness's emulator (Unicorn) leaves the NaN signaling, so tests
+// can't tell this from a plain copy (docs/verification.md, limits). Used where the disassembly shows it.
 #define T5_X87_COPY(dst, src) __asm__("flds %1\n\tfstps %0" : "=m"(dst) : "m"(src))

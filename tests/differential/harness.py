@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[2]
 STUBS, STUBS_SIZE = 0x00080000, 0x00008000
 STACK, STACK_SIZE = 0x00100000, 0x00100000
 HEAP, HEAP_SIZE = 0x00300000, 0x00100000
-FIXTURE, FIXTURE_SIZE = 0x00280000, 0x00010000   # Fixture.alloc(): dvars and other state a case builds
+FIXTURE, FIXTURE_SIZE = 0x0C000000, 0x00100000   # Fixture.alloc(): dvars and other state a case builds (cg_s alone is 455 KB)
 TEB, TEB_SIZE = 0x00090000, 0x00001000           # thread environment block (FS base)
 GDT = 0x00091000                                 # one descriptor: FS -> TEB
 TLS_THREAD_VALUES = 0x14       # offset in the TLS block of the engine's thread-value array pointer (Sys_GetValue)
@@ -283,13 +283,14 @@ def _st0(mu):
     return sign * mant / (1 << 63) * 2.0 ** (exp - 16383)
 
 
-def bool_dvar_undefined_bytes(dvar_va):
-    """Addresses of a bool dvar_s whose contents the original leaves undefined: Dvar_SetBool builds a 16-byte
-    DvarValue with only `enabled` set and copies the stack garbage in the other 15 bytes into current and
-    latched (records/bugs.tsv B0009). Comparing them would compare two builds' stack layouts."""
+def dvar_undefined_bytes(dvar_va, defined=1):
+    """Addresses of a dvar_s whose contents the original leaves undefined: Dvar_SetBool, Dvar_SetInt and
+    Dvar_SetFloat build a 16-byte DvarValue with only one member set (`defined` bytes: 1 for bool, 4 for int
+    and float) and copy the stack garbage in the rest into current and latched (records/bugs.tsv B0009).
+    Comparing them would compare two builds' stack layouts."""
     out = set()
     for field in (0x18, 0x28):  # current, latched
-        out.update(range(dvar_va + field + 1, dvar_va + field + 16))
+        out.update(range(dvar_va + field + defined, dvar_va + field + 16))
     return out
 
 
@@ -352,6 +353,8 @@ class Fixture:
 
     def alloc(self, data: bytes, align=16):
         va = self.next
+        if va + len(data) > FIXTURE + FIXTURE_SIZE:
+            raise MemoryError(f"fixture region full: {len(data):#x} bytes more needed at {va:#x}")
         self.m.mu.mem_write(va, bytes(data))
         self.next = (va + len(data) + align - 1) & ~(align - 1)
         return va
@@ -512,7 +515,7 @@ class Machine:
             name_va = dvar_va + 0x70
             d = bytearray(0x70)
             struct.pack_into("<I", d, 0x00, name_va)
-            self._dvars_undefined.update(bool_dvar_undefined_bytes(dvar_va))
+            self._dvars_undefined.update(dvar_undefined_bytes(dvar_va))
             out += d + name + b"\0" * (-(len(name)) % 16)
             self.mu.mem_write(va, struct.pack("<I", dvar_va))
         assert len(out) <= DVARS_SIZE

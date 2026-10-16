@@ -6,9 +6,8 @@
 // friends in the IW engine family).
 #pragma once
 
+#include "bgame/bg_public.h"
 #include "qcommon/dvar.h"
-
-#define T5_OFFSET_CHECK(type, member, offset) static_assert(__builtin_offsetof(type, member) == offset, #type "." #member)
 
 // ---- shared types -----------------------------------------------------------------------------------------
 template <int BIT_COUNT>
@@ -70,18 +69,6 @@ extern const dvar_s *m_forward;
 extern const dvar_s *cl_freelook;
 
 // ---- client structs (partial) ----------------------------------------------------------------------------
-struct playerState_s  // sizeof 9892; partial
-{
-	char pad_0000[12];
-	int pm_flags;           // 0x00C
-	char pad_0010[228 - 16];
-	int eFlags2;            // 0x0E4
-	char pad_00E8[344 - 232];
-	int weaponstate;        // 0x158
-	char pad_015C[9892 - 348];
-};
-static_assert(sizeof(playerState_s) == 9892, "playerState_s");
-
 struct clSnapshot_t  // sizeof 9948; partial
 {
 	char pad_0000[32];

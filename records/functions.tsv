@@ -1,6 +1,14 @@
 build	va	status	src	note
 CoDMPServer	00405F20	matches	src/aim_assist/aim_assist.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	00477D60	matches	src/cgame/cg_camera.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	00479530	matches	src/cgame/cg_camera.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	00479B50	matches	src/cgame/cg_camera.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	00479BE0	matches	src/cgame/cg_camera.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	004BFF00	matches	src/cgame/cg_main.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	004BFF30	matches	src/cgame/cg_main.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	004BFF60	matches	src/cgame/cg_main.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	00541420	matches	src/client_mp/cl_cgame_mp.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	00546E80	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	00551BF0	matches	src/client_mp/cl_input_mp.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	00551CE0	matches	src/client_mp/cl_input_mp.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	00553F90	matches	src/client_mp/cl_input_mp.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
@@ -121,7 +129,6 @@ CoDMPServer	007B0B70	matches	src/universal/com_math.cpp	differential test (emula
 CoDMPServer	007B1080	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007B1340	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007B1A00	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
-CoDMPServer	00546E80	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007D8760	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007D8780	compiles	src/win32/win_input.cpp	not testable in the emulator yet: GPad_InitAll registers dvars, which copy their names into the script string table (MT), an engine subsystem the harness does not initialize; the original raises MT_Error
 CoDMPServer	007D8790	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
@@ -141,3 +148,8 @@ CoDMPServer	007D8AE0	matches	src/win32/win_input.cpp	differential test (emulated
 CoDMPServer	007D8B50	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007D8E20	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007D8F60	matches	src/win32/win_input.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	00A4F6D0	matches	src/gfx_d3d/r_init.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	00A5D560	matches	src/gfx_d3d/r_scene.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	00A5D5B0	matches	src/gfx_d3d/r_scene.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	00A619A0	matches	src/gfx_d3d/r_scene.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	00A61B60	matches	src/gfx_d3d/r_scene.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90

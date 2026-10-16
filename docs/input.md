@@ -53,8 +53,8 @@ pitch  += clamp(m_pitch * my, ±frame_msec * cgameMaxPitchSpeed / 1000)
   bias (the reconstruction's `CL_MouseMoveToInt`).
 - `cmd->pitchmove`/`yawmove` get the scaled movement truncated, capped at 127 before the add, then clamped to a
   signed char (`ClampChar`).
-- `cgameFOVSensitivityScale` is set by cgame through `CL_SetFOVSensitivityScale` (lower while aiming down
-  sights).
+- `cgameFOVSensitivityScale` is set by cgame through `CL_SetFOVSensitivityScale`: `tan(fov/2) / tan(cg_fov/2)`,
+  lower while aiming down sights (docs/fov.md).
 - Unless `eFlags2 & 0x40000`, mouse aim assist runs last (`AimAssist_UpdateMouseInput`): for the mouse it only
   does auto-melee; the angles pass through unchanged.
 
